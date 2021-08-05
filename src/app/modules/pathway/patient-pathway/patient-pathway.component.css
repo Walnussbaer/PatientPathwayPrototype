@@ -1,0 +1,39 @@
+#background {
+
+    width: 100vw;
+    height: 100vh;
+
+    display: flex;
+    flex-direction: column;
+
+    justify-content: flex-start;
+
+    align-items: center;
+
+}
+
+#pathway {
+
+    width: 80%;
+    height: 100%;
+
+}
+
+.pathway-entry-header {
+
+    color: black;
+
+}
+
+.pathway-entry-dot {
+
+    background-color: lightcoral;
+    cursor: pointer;
+
+}
+
+.pathway-entry-dot:hover {
+
+    background-color: coral;
+
+}

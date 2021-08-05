@@ -1,1 +1,17 @@
-<p>patient-pathway works!</p>
+<div id="background">
+
+    <h1>Mein Patientenpfad</h1>
+
+    <mgl-timeline id="pathway" [alternate]="pathwayEntryAlternation" [side]="pathwaySide">
+
+        <mgl-timeline-entry *ngFor="let entry of pathwayData, let i = index" (expand)="onEntryExpand($event)">
+            <mgl-timeline-entry-header class="pathway-entry-header">{{entry.header}}</mgl-timeline-entry-header>
+            <mgl-timeline-entry-content>{{entry.content}}</mgl-timeline-entry-content>
+            <mgl-timeline-entry-dot [size]="pathwayDotSize" class="pathway-entry-dot"></mgl-timeline-entry-dot>
+            <mgl-timeline-entry-side>{{entry.date | date : "dd.MMMM.yyyy"}}</mgl-timeline-entry-side>
+        </mgl-timeline-entry>
+
+    </mgl-timeline>
+
+
+</div>

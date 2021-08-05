@@ -1,0 +1,29 @@
+[
+
+    {
+        "date": "2021-04-03",
+        "header": "Termin 1",
+        "content": "Ich bin ein Termin"
+    },
+    {
+        "date": "2021-06-03",
+        "header": "Termin 2",
+        "content": "Ich bin ein Termin"
+    },
+    {
+        "date": "2021-08-03",
+        "header": "Termin 3",
+        "content": "Ich bin ein Termin"
+    },
+    {
+        "date": "2022-10-05",
+        "header": "Termin 4",
+        "content": "Ich bin ein Termin"
+    },
+    {
+        "date": "2023-02-01",
+        "header": "Termin 5",
+        "content": "Ich bin ein Termin"
+    }
+
+]
