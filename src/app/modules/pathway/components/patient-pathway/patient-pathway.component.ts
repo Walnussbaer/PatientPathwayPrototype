@@ -1,5 +1,4 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { PathwayService } from 'src/app/shared/services/pathway.service';
 import { PathwayEvent } from '../../model/PathwayEvent';
 
 /**

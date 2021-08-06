@@ -1,6 +1,6 @@
 <div id="background">
 
-    <h1>Mein Patientenpfad</h1>
+    <pathway-control [speechRecognitionAvailable]="speechRecognitionReady"></pathway-control>
 
     <patient-pathway id="pathway" [pathwayEvents]="pathwayEvents"></patient-pathway>
 
