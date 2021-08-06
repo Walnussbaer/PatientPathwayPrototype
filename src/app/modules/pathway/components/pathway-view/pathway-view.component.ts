@@ -1,0 +1,31 @@
+import { Component, OnInit } from '@angular/core';
+import { PathwayService } from 'src/app/shared/services/pathway.service';
+import { PathwayEvent } from '../../model/PathwayEvent';
+
+@Component({
+  selector: 'app-pathway-view',
+  templateUrl: './pathway-view.component.html',
+  styleUrls: ['./pathway-view.component.css']
+})
+export class PathwayViewComponent implements OnInit {
+
+  public pathwayEvents: PathwayEvent[] = [];
+
+  constructor(private pathwayService: PathwayService) { }
+
+  ngOnInit(): void {
+
+    // call the business layer and get available events of pathway
+    this.pathwayService.getPathwayEntries().subscribe({
+      next: (result) =>  { 
+        this.pathwayEvents = result
+      },
+
+      error: (error) => {
+        console.error("Could not retrieve pathway data!");
+      }
+    })
+
+  }
+
+}

@@ -1,4 +1,4 @@
-export interface PathwayEntry {
+export interface PathwayEvent {
 
     date: Date;
     header: any;
