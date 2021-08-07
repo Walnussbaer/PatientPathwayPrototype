@@ -4,7 +4,7 @@
     <!--this is the control panel for working with the patient pathway-->
     <button mat-raised-button color="primary">Neuer Termin</button>
 
-    <button *ngIf="speechRecognitionAvailable" (clicked)="onVoiceRecognitionActivated()" mat-raised-button color="primary">
+    <button *ngIf="speechRecognitionAvailable" (click)="onActivateVoiceControl()" mat-raised-button color="primary">
         <fa-icon [icon]="voiceControlIcon"></fa-icon>
     </button>
     
