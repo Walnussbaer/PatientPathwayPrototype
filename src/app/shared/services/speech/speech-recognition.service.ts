@@ -48,7 +48,7 @@ export class SpeechRecognitionService {
       speechRecognitionSupported = true;
 
     } 
-    // if not vendor independent version could be found, we gonna use the google implementation, which is currently the only one implementing speech recognition properly
+    // if not vendor independent version could be found, we gonna use the google implementation, which is currently the only one implementing the speech recognition properly
     else if ('webkitSpeechRecognition' in window) {
 
       this.speechRecognition = new webkitSpeechRecognition();
