@@ -34,14 +34,34 @@ export class SpeechRecognitionService {
    /**
     * Initializes the speech recognition service with a default configuration. 
     * 
-    * @return whether the speech recognition is ready to use or not 
+    * @return true if the speech recognition is available and ready to use, else false
     */
    public init(): boolean {
 
-    if ('webkitSpeechRecognition' in window) {
+    let speechRecognitionSupported: boolean = false;
+
+    // check whether the browser supports the web speech API without a vendor prefix
+    if ('speechRecognition' in window) {
+
+      this.speechRecognition = new window.SpeechRecognition();
+      this.speechGrammarList = new window.SpeechGrammarList();
+      speechRecognitionSupported = true;
+
+    } 
+    // if not vendor independent version could be found, we gonna use the google implementation, which is currently the only one implementing speech recognition properly
+    else if ('webkitSpeechRecognition' in window) {
 
       this.speechRecognition = new webkitSpeechRecognition();
       this.speechGrammarList = new webkitSpeechGrammarList();
+      speechRecognitionSupported = true;
+
+    }
+    else {
+      speechRecognitionSupported = false;
+    }
+    
+    // configure some parameters of the speech recognition
+    if (speechRecognitionSupported) {
 
       /* the following comments are taken from https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API/Using_the_Web_Speech_API */
 
@@ -63,18 +83,21 @@ export class SpeechRecognitionService {
     else {
 
       return false;
+
     }
 
    }
 
   /**
-   * Adds a grammar to the speech recognition. Note, that grammars are not working at the moment. This may change in the future. 
+   * Adds a grammar to the speech recognition. Note that grammars are not supported by the Google implementation of the Web Speech API. This may change in the future. 
    * 
-   * Rules that shall be added must be in the JSGF format. For example, a rule that look's for the terms 'New element' should look like this:
+   * Rules that shall be added must be in the JSGF format. For example, a rule that look's for the terms 'New element' in an utterance of a human being should look like this:
    * 
-   * "public \<newPathElement> = New Element;"
+   * "public \<newPathElement> = New element;"
    * 
    * Do not forget the ; at the end of a grammar rule. 
+   * 
+   * For more info, go to https://www.w3.org/TR/2000/NOTE-jsgf-20000605/
    * 
    * @param grammarName the name of the grammar
    * @param grammarRules an Array of grammar rules using the JSGF format
