@@ -6,6 +6,7 @@ import { faCoffee, faMicrophone, IconDefinition } from '@fortawesome/free-solid-
 import { SpeechRecognitionService } from 'src/app/shared/services/speech/speech-recognition.service';
 import { PathwayEvent } from '../../model/PathwayEvent';
 import { PathwayControlHelpDialogComponent } from '../pathway-control-help-dialog/pathway-control-help-dialog.component';
+import { PathwayEventCreatorComponent } from '../pathway-event-creator/pathway-event-creator.component';
 
 @Component({
   selector: 'pathway-control',
@@ -21,8 +22,6 @@ export class PathwayControlComponent implements OnInit {
   public pathIsListening: boolean = false;
 
   public voiceControlIcon: IconDefinition = faMicrophone;
-
-  public voiceActivationButtonClass: string = "";
 
   constructor(
     private matSnackbarService: MatSnackBar, 
@@ -60,9 +59,22 @@ export class PathwayControlComponent implements OnInit {
 
       transcript = transcript.toLowerCase();
 
+      console.log(transcript);
+
       // since grammars don't work yet, we need to to a string check on the said words
       if (transcript === "neuer termin") {
 
+        this.speechRecognitionService.stopRecognition();
+
+        const newPathwayEventDialog = this.dialog.open(
+          PathwayEventCreatorComponent,
+          {
+            width: "50%",
+            height: "50%",
+          }
+        );
+
+      
         // create a new pathway event
         let newPathwayEvent : PathwayEvent = {
           content: "Ich bin ein durch Sprache erstellter Termin",
@@ -83,7 +95,6 @@ export class PathwayControlComponent implements OnInit {
 
       this.speechRecognitionService.speechRecognition.stop();
       this.pathIsListening = false;
-      this.voiceActivationButtonClass = "not-recording";
 
     })
 

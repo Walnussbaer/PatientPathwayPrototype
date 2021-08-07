@@ -32,6 +32,7 @@ export class PathwayViewComponent implements OnInit {
   public onNewPathwayEvent(newPahtwayEvent: PathwayEvent): void {
 
     this.pathwayEvents.push(newPahtwayEvent);
+    
 
   }
 
