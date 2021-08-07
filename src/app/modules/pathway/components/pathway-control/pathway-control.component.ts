@@ -30,7 +30,7 @@ export class PathwayControlComponent implements OnInit {
 
   ngOnInit(): void {
 
-    this.speechRecognitionAvailable = this.speechRecognitionService.init();
+    this.speechRecognitionAvailable = this.speechRecognitionService.initRecognition();
 
     // check whether we can use the speech recognition
     if (!this.speechRecognitionAvailable) {
@@ -43,9 +43,6 @@ export class PathwayControlComponent implements OnInit {
         {
           panelClass: ["warning-mat-snackbar"]
         });
-
-    } else {
-      this.setupSpeechRecognitionEventListeners();
     }
   }
 
@@ -114,6 +111,9 @@ public onActivateVoiceControl(): void {
 
   this.speechRecognitionService.startRecognition();
   this.pathIsListening = true;
+
+
+
 
 }
 

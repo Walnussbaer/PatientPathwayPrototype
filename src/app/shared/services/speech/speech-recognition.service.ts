@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
 
 /* At the moment, we need to use the Google implementation, so we need to declare these variables here,
  otherwise, Angular will not recognize them, becauase webkitSpeechRecognition is not a library 
@@ -10,7 +11,9 @@ declare var webkitSpeechGrammarList: any;
  * This service handles the speech recognition. 
  * 
  * Note: As of now, grammars are not working correctly using the Web Speech API. The spech recognition does not check wheteher the grammar can be applied to the spoken
- * words or not. The spech recognition always returns an result. Therefore, this services checks the spoken words against strings. 
+ * words or not. The spech recognition always returns an result. There, this service can only return what was said (transcripts). 
+ * 
+ * It cannot check spoken words against some grammars/ grammar rules. 
  */
 @Injectable({
   providedIn: 'root'
@@ -22,7 +25,7 @@ export class SpeechRecognitionService {
    * 
    * We declare this public for now, so we can easily add event listeners. 
    */
-  public speechRecognition!: SpeechRecognition;
+  private speechRecognition!: SpeechRecognition;
 
   /**
    * Contains the grammar for the speech recognition.
@@ -31,12 +34,12 @@ export class SpeechRecognitionService {
 
   constructor() {}
 
-   /**
-    * Initializes the speech recognition service with a default configuration. 
-    * 
-    * @return true if the speech recognition is available and ready to use, else false
-    */
-   public init(): boolean {
+  /**
+   * Initializes the speech recognition service. This method must be called before any speech recognition needs to be done. 
+   * 
+   * @returns true if the speech recognition could be initialized, else false
+   */
+  public initRecognition(): boolean {
 
     let speechRecognitionSupported: boolean = false;
 
@@ -85,8 +88,42 @@ export class SpeechRecognitionService {
       return false;
 
     }
+  }
 
-   }
+  public startRecognition(): void {
+
+    // we can only start a recognition if the recognition was initialized and is available in the browser
+    if (!this.speechRecognition) {
+      return;
+    }
+
+    this.speechRecognition.start();
+
+  }
+
+  public stopRecognition(): void {
+
+    this.speechRecognition.stop();
+
+  }
+
+  public onSpeechRecognitionResultAvailable(): Observable<string> {
+
+    return new Observable((observer) => {
+
+      this.speechRecognition.addEventListener("result",(resultEvent) => {
+
+        let transcript: string = resultEvent.results[0][0].transcript;
+  
+        console.log(transcript);
+
+        observer.next(transcript);
+        observer.complete();
+
+    })
+    })
+
+  }
 
   /**
    * Adds a grammar to the speech recognition. Note that grammars are not supported by the Google implementation of the Web Speech API. This may change in the future. 
@@ -125,18 +162,6 @@ export class SpeechRecognitionService {
     grammar = grammarVersion + grammarName + concatedGrammarRules;
 
     this.speechGrammarList.addFromString(grammar,grammarWeight);
-
-  }
-
-   public startRecognition(): void {
-
-    this.speechRecognition.start();
-
-  }
-
-  public stopRecognition(): void {
-
-    this.speechRecognition.stop();
 
   }
 
