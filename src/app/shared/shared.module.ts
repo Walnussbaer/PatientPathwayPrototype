@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { MatButtonModule} from '@angular/material/button';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import {MatSnackBarModule} from '@angular/material/snack-bar'; 
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner'; 
 
 
 
@@ -12,12 +13,14 @@ import {MatSnackBarModule} from '@angular/material/snack-bar';
     CommonModule,
     MatButtonModule,
     FontAwesomeModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    MatProgressSpinnerModule
   ],
   exports: [
     MatButtonModule,
     FontAwesomeModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    MatProgressSpinnerModule
     
   ]
 })
