@@ -12,11 +12,15 @@ import { PathwayEvent } from '../../model/PathwayEvent';
 })
 export class PathwayControlComponent implements OnInit {
 
-  public speechRecognitionAvailable: boolean = false;
-
   @Output() pathwayEventEmitter = new EventEmitter<PathwayEvent>();
 
-  voiceControlIcon: IconDefinition = faMicrophone;
+  public speechRecognitionAvailable: boolean = false;
+
+  public pathIsListening: boolean = false;
+
+  public voiceControlIcon: IconDefinition = faMicrophone;
+
+  public voiceActivationButtonClass: string = "";
 
   constructor(private matSnackbarService: MatSnackBar, private speechRecognitionService: SpeechRecognitionService) { }
 
@@ -24,13 +28,10 @@ export class PathwayControlComponent implements OnInit {
 
     this.speechRecognitionAvailable = this.speechRecognitionService.init();
 
+    // check whether we can use the speech recognition
     if (!this.speechRecognitionAvailable) {
-      console.warn("Speech recognition not available. Please use Google Chrome or Microsoft Edge instead.")
-    } else {
-      this.setupSpeechRecognitionEventListeners();
-    }
 
-    if (!this.speechRecognitionAvailable) {
+      console.warn("Speech recognition not available. Please use Google Chrome or Microsoft Edge instead.")
 
       this.matSnackbarService.open(
         "Die Spracherkennung wird in diesem Browser nicht unterstützt. Bitte nutzen Sie Google Chrome oder Microsoft Edge.",
@@ -39,8 +40,9 @@ export class PathwayControlComponent implements OnInit {
           panelClass: ["warning-mat-snackbar"]
         });
 
+    } else {
+      this.setupSpeechRecognitionEventListeners();
     }
-
   }
 
   private setupSpeechRecognitionEventListeners(): void {
@@ -52,8 +54,6 @@ export class PathwayControlComponent implements OnInit {
       let transcript: string = e.results[0][0].transcript;
 
       transcript = transcript.toLowerCase();
-
-      console.log(transcript);
 
       // since grammars don't work yet, we need to to a string check on the said words
       if (transcript === "neues element") {
@@ -69,9 +69,6 @@ export class PathwayControlComponent implements OnInit {
         console.log("Created a new date in the pathway");
 
       }
-      
-      
-
     })
 
     // when the user stopped talking
@@ -80,6 +77,8 @@ export class PathwayControlComponent implements OnInit {
       console.log("Speech has ended!");
 
       this.speechRecognitionService.speechRecognition.stop();
+      this.pathIsListening = false;
+      this.voiceActivationButtonClass = "not-recording";
 
     })
 
@@ -98,6 +97,14 @@ export class PathwayControlComponent implements OnInit {
 public onActivateVoiceControl(): void {
 
   this.speechRecognitionService.startRecognition();
+  this.pathIsListening = true;
+
+}
+
+public onDeactivateVoiceControl(): void {
+
+  this.speechRecognitionService.stopRecognition();
+  this.pathIsListening = false;
 
 }
 

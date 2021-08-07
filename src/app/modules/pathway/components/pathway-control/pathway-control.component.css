@@ -11,3 +11,28 @@
     gap: 20px;
 
 }
+
+#voiceControlIndicatorIcon {
+
+    color: black;
+
+}
+
+#voiceControlRunningButton {
+
+    animation: recording 2s infinite;
+
+}
+
+@keyframes recording {
+
+    from {background-color: red;}
+
+    50% {background-color: white;}
+
+    to {background-color: red;}
+
+}
+
+
+  
