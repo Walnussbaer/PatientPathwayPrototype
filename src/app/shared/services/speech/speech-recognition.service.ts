@@ -132,7 +132,11 @@ export class SpeechRecognitionService {
 
     this.speechRecognition.start();
 
+  }
 
+  public stopRecognition(): void {
+
+    this.speechRecognition.stop();
 
   }
 
