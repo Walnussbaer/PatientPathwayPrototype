@@ -1,9 +1,11 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { faCoffee, faMicrophone, IconDefinition } from '@fortawesome/free-solid-svg-icons';
 import { SpeechRecognitionService } from 'src/app/shared/services/speech/speech-recognition.service';
 import { PathwayEvent } from '../../model/PathwayEvent';
+import { PathwayControlHelpDialogComponent } from '../pathway-control-help-dialog/pathway-control-help-dialog.component';
 
 @Component({
   selector: 'pathway-control',
@@ -22,7 +24,10 @@ export class PathwayControlComponent implements OnInit {
 
   public voiceActivationButtonClass: string = "";
 
-  constructor(private matSnackbarService: MatSnackBar, private speechRecognitionService: SpeechRecognitionService) { }
+  constructor(
+    private matSnackbarService: MatSnackBar, 
+    private speechRecognitionService: SpeechRecognitionService,
+    private dialog: MatDialog) { }
 
   ngOnInit(): void {
 
@@ -56,7 +61,7 @@ export class PathwayControlComponent implements OnInit {
       transcript = transcript.toLowerCase();
 
       // since grammars don't work yet, we need to to a string check on the said words
-      if (transcript === "neues element") {
+      if (transcript === "neuer termin") {
 
         // create a new pathway event
         let newPathwayEvent : PathwayEvent = {
@@ -107,5 +112,18 @@ public onDeactivateVoiceControl(): void {
   this.pathIsListening = false;
 
 }
+
+public openVoiceCommandHelpDialog(): void {
+
+  const helpDialogRef = this.dialog.open(
+    PathwayControlHelpDialogComponent,
+    {
+      width: "450px",
+      height: "300px",
+    }
+  )
+
+}
+
 
 }

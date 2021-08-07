@@ -5,6 +5,7 @@ import { MglTimelineModule } from 'angular-mgl-timeline';
 import { PathwayViewComponent } from './components/pathway-view/pathway-view.component';
 import { PathwayControlComponent } from './components/pathway-control/pathway-control.component';
 import { SharedModule } from 'src/app/shared/shared.module';
+import { PathwayControlHelpDialogComponent } from './components/pathway-control-help-dialog/pathway-control-help-dialog.component';
 
 
 
@@ -12,7 +13,8 @@ import { SharedModule } from 'src/app/shared/shared.module';
   declarations: [
     PatientPathwayComponent,
     PathwayViewComponent,
-    PathwayControlComponent
+    PathwayControlComponent,
+    PathwayControlHelpDialogComponent
   ],
   imports: [
     CommonModule,

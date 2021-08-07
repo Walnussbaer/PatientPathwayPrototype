@@ -11,6 +11,8 @@
     <button id="voiceControlRunningButton" mat-raised-button color="primary" *ngIf="speechRecognitionAvailable && pathIsListening" (click)="onDeactivateVoiceControl()">
         <fa-icon id="voiceControlIndicatorIcon" [icon]="voiceControlIcon"></fa-icon>
     </button>
+
+    <button mat-raised-button color="accent" (click)="openVoiceCommandHelpDialog()">Sprachbefehle anzeigen</button>
  
 
 </div>
