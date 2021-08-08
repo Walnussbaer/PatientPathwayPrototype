@@ -36,14 +36,10 @@ export class PathwayControlComponent implements OnInit {
     // check whether we can use the speech recognition
     if (!this.speechRecognitionAvailable) {
 
-      console.warn("Speech recognition not available. Please use Google Chrome or Microsoft Edge instead.")
+      console.warn("Speech recognition not available. Please use Google Chrome or Microsoft Edge instead.");
 
-      this.matSnackbarService.open(
-        "Die Spracherkennung wird in diesem Browser nicht unterstützt. Bitte nutzen Sie Google Chrome oder Microsoft Edge.",
-        "Verstanden", 
-        {
-          panelClass: ["warning-mat-snackbar"]
-        });
+      this.displayErrorMessage("Die Spracherkennung wird in diesem Browser nicht unterstützt. Bitte nutzen Sie Google Chrome oder Microsoft Edge.")
+
     } else {
 
       this.setupSpeechRecognitionBehaviour();

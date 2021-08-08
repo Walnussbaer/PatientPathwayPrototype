@@ -180,6 +180,7 @@ export class SpeechRecognitionService {
 
         // see https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognitionErrorEvent/error for reference
         // error.message doesn't seem to be implemented yet, so we gonna do this ourselves
+        
         let errorIdentifier = errorEvent.error;
 
         switch (errorIdentifier) {

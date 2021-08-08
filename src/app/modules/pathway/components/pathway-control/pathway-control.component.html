@@ -2,7 +2,7 @@
 
     <h1>Mein Patientenpfad</h1>
     <!--this is the control panel for working with the patient pathway-->
-    <button mat-raised-button color="primary">Neuer Termin</button>
+    <button disabled mat-raised-button color="primary">Neuer Termin</button>
 
     <button mat-raised-button color="primary" *ngIf="speechRecognitionAvailable && !pathIsListening" (click)="onActivateVoiceControl()">
         <fa-icon id="voiceControlIndicatorIcon" [icon]="voiceControlIcon"></fa-icon>
