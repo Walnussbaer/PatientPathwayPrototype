@@ -6,8 +6,8 @@ import { faCoffee, faMicrophone, IconDefinition } from '@fortawesome/free-solid-
 import { SpeechRecognitionService } from 'src/app/shared/services/speech/speech-recognition.service';
 import { WebSpeechRecognitionMessage } from 'src/app/shared/services/speech/WebSpeechRecognitionMessage';
 import { PathwayEvent } from '../../model/PathwayEvent';
+import { PathwayAppointmentCreatorComponent } from '../creators/pathway-appointment-creator/pathway-appointment-creator.component';
 import { PathwayControlHelpDialogComponent } from '../pathway-control-help-dialog/pathway-control-help-dialog.component';
-import { PathwayEventCreatorComponent } from '../pathway-event-creator/pathway-event-creator.component';
 
 @Component({
   selector: 'pathway-control',
@@ -64,7 +64,7 @@ export class PathwayControlComponent implements OnInit {
   public openPathwayEventCreatorDialog(): void {
 
     const newPathwayEventDialog = this.dialog.open(
-      PathwayEventCreatorComponent,
+      PathwayAppointmentCreatorComponent,
       {
         width: "50%",
         height: "50%",
@@ -107,9 +107,6 @@ export class PathwayControlComponent implements OnInit {
       this.speechRecognitionService.onSpeechRecognitionResultAvailable().subscribe({
         next: (message: WebSpeechRecognitionMessage) => {
     
-          //this.speechRecognitionService.stopRecognition();
-          //this.pathIsListening = false;
-    
           // get the recognition result ("the command that was said")
           let recognitionResult = message.data;
     
@@ -122,6 +119,8 @@ export class PathwayControlComponent implements OnInit {
             case "neuer termin": {
     
               this.openPathwayEventCreatorDialog();
+
+              // get back the new event from the dialog
     
               //this.pathwayEventEmitter.emit(newPathwayEvent);
     
@@ -177,7 +176,5 @@ export class PathwayControlComponent implements OnInit {
 
         }
       });
-      
-
   }
 }
