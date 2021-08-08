@@ -1,5 +1,8 @@
+import { ObserversModule } from '@angular/cdk/observers';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { WebSpeechRecognitionMessage } from './WebSpeechRecognitionMessage';
+import { WebSpeechRecognitionMessageType } from './WebSpeechRecognitionMessageType';
 
 /* At the moment, we need to use the Google implementation, so we need to declare these variables here,
  otherwise, Angular will not recognize them, becauase webkitSpeechRecognition is not a library 
@@ -94,6 +97,7 @@ export class SpeechRecognitionService {
 
     // we can only start a recognition if the recognition was initialized and is available in the browser
     if (!this.speechRecognition) {
+      console.log("i got killed");
       return;
     }
 
@@ -107,22 +111,138 @@ export class SpeechRecognitionService {
 
   }
 
-  public onSpeechRecognitionResultAvailable(): Observable<string> {
+  public onSpeechRecognitionResultAvailable(): Observable<WebSpeechRecognitionMessage> {
 
-    return new Observable((observer) => {
+    return new Observable((subscriber) => {
 
       this.speechRecognition.addEventListener("result",(resultEvent) => {
 
         let transcript: string = resultEvent.results[0][0].transcript;
-  
+
         console.log(transcript);
 
-        observer.next(transcript);
-        observer.complete();
+        // create the message
+        let message: WebSpeechRecognitionMessage = {
+          messageType: WebSpeechRecognitionMessageType.RESULT_AVAILABLE,
+          data: transcript,
+        }
+
+        subscriber.next(message);
 
     })
     })
 
+  }
+
+  public onSpeechRecognitionStarted(): Observable<WebSpeechRecognitionMessage> {
+
+    return new Observable((subscriber) => {
+
+      this.speechRecognition.addEventListener("start",(startEvent) => {
+        
+        let message: WebSpeechRecognitionMessage = {
+
+          messageType: WebSpeechRecognitionMessageType.START,
+          data: null
+        };
+
+        subscriber.next(message);
+
+      });
+    })
+  }
+
+  public onSpeechRecognitionEnded(): Observable<WebSpeechRecognitionMessage> {
+
+    return new Observable((subscriber) => {
+
+      this.speechRecognition.addEventListener("end",(endEvent) => {
+        
+        let message: WebSpeechRecognitionMessage = {
+
+          messageType: WebSpeechRecognitionMessageType.END,
+          data: null
+        };
+
+        subscriber.next(message);
+
+      });
+    })
+  }
+
+  public onSpeechRecognitionError(): Observable<WebSpeechRecognitionMessage> {
+
+    return new Observable((subscriber) => {
+
+      this.speechRecognition.addEventListener("error",(errorEvent) => {
+
+        let customErrorMessage = "";
+
+        // see https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognitionErrorEvent/error for reference
+        // error.message doesn't seem to be implemented yet, so we gonna do this ourselves
+        let errorIdentifier = errorEvent.error;
+
+        switch (errorIdentifier) {
+
+          case "no-speech": {
+
+            customErrorMessage = "Entschuldigung, wir konnten Sie nicht hören!";
+            break;
+          }
+
+          case "aborted":  {
+            customErrorMessage = "Die Spracheingabe wurde abgebrochen";
+            break;
+          }
+
+          case "audio-capture": {
+            customErrorMessage = "Es konnte kein angeschlossenes Mikrofon erkannt werden";
+            break;
+          }
+
+          case "network": {
+            customErrorMessage = "Es ist ein Netzwerkfehler bei der Spracherkennung aufgetreten. Anscheinend sind die Google Server mal wieder down ;)";
+            break;
+          }
+
+          case "not-allowed": {
+            customErrorMessage = "Die Spracherkennung in Ihrem Browser ist deaktiviert. Bitte aktivieren Sie die Spracherkennung.";
+            break;
+          }
+
+          case "service-not-allowed": {
+            customErrorMessage = "Ihr Browser kann keine Verbindung zur Spracherkennung aufbauen. Haben Sie vielleicht etwas gegen Google?";
+            break;
+          }          
+
+          case "bad-grammar": {
+            customErrorMessage = "Die hinterlegten Grammatiken enthalten einen Fehler.";
+            break;
+          }
+
+          case "language-not-supported": {
+            customErrorMessage = "Diese Sprache wird leider nicht unterstützt.";
+            break;
+          }
+
+          // this should not happen under normale circumstances
+          default: {
+            customErrorMessage = "Ein Fehler, der nicht dem Standard der Web Speech API entspricht, ist aufgetreten."
+            break;
+          }
+
+        }
+        
+        let message: WebSpeechRecognitionMessage = {
+
+          messageType: WebSpeechRecognitionMessageType.ERROR,
+          data: customErrorMessage,
+        };
+
+        subscriber.next(message);
+
+      });
+    })
   }
 
   /**

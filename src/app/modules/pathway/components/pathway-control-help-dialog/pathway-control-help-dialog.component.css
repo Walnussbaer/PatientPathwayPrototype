@@ -1,4 +1,8 @@
 th,td {
     padding: 10px;
+    text-align: left;
+}
+
+h3 {
     text-align: center;
 }

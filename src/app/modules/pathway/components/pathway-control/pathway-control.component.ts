@@ -1,9 +1,10 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, ViewEncapsulation } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { faCoffee, faMicrophone, IconDefinition } from '@fortawesome/free-solid-svg-icons';
 import { SpeechRecognitionService } from 'src/app/shared/services/speech/speech-recognition.service';
+import { WebSpeechRecognitionMessage } from 'src/app/shared/services/speech/WebSpeechRecognitionMessage';
 import { PathwayEvent } from '../../model/PathwayEvent';
 import { PathwayControlHelpDialogComponent } from '../pathway-control-help-dialog/pathway-control-help-dialog.component';
 import { PathwayEventCreatorComponent } from '../pathway-event-creator/pathway-event-creator.component';
@@ -11,7 +12,7 @@ import { PathwayEventCreatorComponent } from '../pathway-event-creator/pathway-e
 @Component({
   selector: 'pathway-control',
   templateUrl: './pathway-control.component.html',
-  styleUrls: ['./pathway-control.component.css']
+  styleUrls: ['./pathway-control.component.css'],
 })
 export class PathwayControlComponent implements OnInit {
 
@@ -43,98 +44,144 @@ export class PathwayControlComponent implements OnInit {
         {
           panelClass: ["warning-mat-snackbar"]
         });
+    } else {
+
+      this.setupSpeechRecognitionBehaviour();
+
     }
   }
 
-  private setupSpeechRecognitionEventListeners(): void {
+  public onActivateVoiceControl(): void {
 
-    // when the recognition was successful
-    this.speechRecognitionService.speechRecognition.addEventListener('result',(e)=>{
+    this.speechRecognitionService.startRecognition();
+    this.pathIsListening = true;
 
-      // get the first alternative from the first result and transcibe it (print what was recognized)
-      let transcript: string = e.results[0][0].transcript;
+  }
 
-      transcript = transcript.toLowerCase();
+  public onDeactivateVoiceControl(): void {
 
-      console.log(transcript);
+    this.speechRecognitionService.stopRecognition();
+    this.pathIsListening = false;
 
-      // since grammars don't work yet, we need to to a string check on the said words
-      if (transcript === "neuer termin") {
+  }
 
-        this.speechRecognitionService.stopRecognition();
+  public openPathwayEventCreatorDialog(): void {
 
-        const newPathwayEventDialog = this.dialog.open(
-          PathwayEventCreatorComponent,
-          {
-            width: "50%",
-            height: "50%",
+    const newPathwayEventDialog = this.dialog.open(
+      PathwayEventCreatorComponent,
+      {
+        width: "50%",
+        height: "50%",
+      }
+    );
+  }
+
+  public openHelpDialog(): void {
+
+    const helpDialogRef = this.dialog.open(
+      PathwayControlHelpDialogComponent,
+      {
+        width: "300px",
+        height: "80%",
+      }
+    )
+  }
+
+  private displayErrorMessage(errorMessage: string): void {
+
+    this.matSnackbarService.open(
+      errorMessage,
+      "Verstanden", 
+      {
+        panelClass: ["warning-mat-snackbar"],
+        duration: 8000, // in miliseconds,
+        horizontalPosition: "center",
+        verticalPosition: "top"
+      });
+  }
+
+  /**
+   * Set up the actions that should take place when the speech recognition is used. 
+   * 
+   * We need to do this only once during initialization of the componenent. 
+   */
+  private setupSpeechRecognitionBehaviour() {
+
+      // we subscribe to a potential result from the speech recognition service
+      this.speechRecognitionService.onSpeechRecognitionResultAvailable().subscribe({
+        next: (message: WebSpeechRecognitionMessage) => {
+    
+          //this.speechRecognitionService.stopRecognition();
+          //this.pathIsListening = false;
+    
+          // get the recognition result ("the command that was said")
+          let recognitionResult = message.data;
+    
+          // conert transcript to lower case, since at this point capital or small letters do not matter
+          recognitionResult = recognitionResult.toLowerCase();
+    
+          // we need to do a string check on the transcript, since grammars don't work yet in the Google implementation of the Web Speech API
+          switch (recognitionResult) {
+    
+            case "neuer termin": {
+    
+              this.openPathwayEventCreatorDialog();
+    
+              //this.pathwayEventEmitter.emit(newPathwayEvent);
+    
+              break;
+    
+            }
+            case "hilfe": {
+    
+              this.openHelpDialog();
+              break;
+            }
+    
+            default: {
+    
+              this.displayErrorMessage("Dieses Sprachkommando wird nicht unterstützt.");
+              break;
+    
+            }
           }
-        );
+        }
+      });
+
+      this.speechRecognitionService.onSpeechRecognitionStarted().subscribe({
+        next: (message: WebSpeechRecognitionMessage) => {
+
+          console.log("speech recognition started");
+          this.pathIsListening = true;
+
+        }
+      });
+
+      this.speechRecognitionService.onSpeechRecognitionEnded().subscribe({
+        next: (message: WebSpeechRecognitionMessage) => {
+
+          console.log("speech recognition ended");
+          this.speechRecognitionService.stopRecognition();
+          this.pathIsListening = false;
+
+        }
+      });
 
       
-        // create a new pathway event
-        let newPathwayEvent : PathwayEvent = {
-          content: "Ich bin ein durch Sprache erstellter Termin",
-          header: "Neuer Speech Recognition Termin",
-          date: new Date()
-        };
+      this.speechRecognitionService.onSpeechRecognitionError().subscribe({
+        next: (message: WebSpeechRecognitionMessage) => {
 
-        this.pathwayEventEmitter.emit(newPathwayEvent);
-        console.log("Created a new date in the pathway");
+          console.error("error occured");
+          
+          this.speechRecognitionService.stopRecognition();
 
-      }
-    })
+          this.displayErrorMessage(message.data);     
 
-    // when the user stopped talking
-    this.speechRecognitionService.speechRecognition.addEventListener("speechend",(e)=>{
+          this.pathIsListening = false;
 
-      console.log("Speech has ended!");
+        }
+      });
+      
 
-      this.speechRecognitionService.speechRecognition.stop();
-      this.pathIsListening = false;
-
-    })
-
-    // when there was no match during speech recognition
-    this.speechRecognitionService.speechRecognition.addEventListener("nomatch",(e)=> {
-      console.log("We couldn't recognize what you said!");
-    })
-
-    // when an unexpected error occured
-    this.speechRecognitionService.speechRecognition.addEventListener("error",(e)=> {
-      console.error("An error occured during speech recognition: " + e.error);
-    })
-
-}
-
-public onActivateVoiceControl(): void {
-
-  this.speechRecognitionService.startRecognition();
-  this.pathIsListening = true;
-
-
-
-
-}
-
-public onDeactivateVoiceControl(): void {
-
-  this.speechRecognitionService.stopRecognition();
-  this.pathIsListening = false;
-
-}
-
-public openVoiceCommandHelpDialog(): void {
-
-  const helpDialogRef = this.dialog.open(
-    PathwayControlHelpDialogComponent,
-    {
-      width: "450px",
-      height: "300px",
-    }
-  )
-
-}
-
-
+  }
 }
