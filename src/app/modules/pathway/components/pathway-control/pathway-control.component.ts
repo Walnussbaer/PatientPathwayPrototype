@@ -3,6 +3,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { faCoffee, faMicrophone, IconDefinition } from '@fortawesome/free-solid-svg-icons';
+import { Subscription } from 'rxjs';
 import { SpeechRecognitionService } from 'src/app/shared/services/speech/speech-recognition.service';
 import { WebSpeechRecognitionMessage } from 'src/app/shared/services/speech/WebSpeechRecognitionMessage';
 import { PathwayEvent } from '../../model/PathwayEvent';
@@ -23,6 +24,8 @@ export class PathwayControlComponent implements OnInit {
   public pathIsListening: boolean = false;
 
   public voiceControlIcon: IconDefinition = faMicrophone;
+
+  private currentSpeechRecognitionServiceSubscriptions: Array<Subscription> = [];
 
   constructor(
     private matSnackbarService: MatSnackBar, 
@@ -61,7 +64,7 @@ export class PathwayControlComponent implements OnInit {
 
   }
 
-  public openPathwayEventCreatorDialog(): void {
+  public openPathwayAppointmentCreatorDialog(): void {
 
     const newPathwayEventDialog = this.dialog.open(
       PathwayAppointmentCreatorComponent,
@@ -70,6 +73,15 @@ export class PathwayControlComponent implements OnInit {
         height: "50%",
       }
     );
+
+    newPathwayEventDialog.afterClosed().subscribe(result => {
+
+      // reset the speech recognition service and renew subscriptions
+      this.unsubscribeFromAllSubscriptions();
+      this.speechRecognitionService.initRecognition();
+      this.setupSpeechRecognitionBehaviour();
+    });
+
   }
 
   public openHelpDialog(): void {
@@ -104,8 +116,10 @@ export class PathwayControlComponent implements OnInit {
   private setupSpeechRecognitionBehaviour() {
 
       // we subscribe to a potential result from the speech recognition service
-      this.speechRecognitionService.onSpeechRecognitionResultAvailable().subscribe({
+      this.currentSpeechRecognitionServiceSubscriptions.push(this.speechRecognitionService.onSpeechRecognitionResultAvailable().subscribe({
         next: (message: WebSpeechRecognitionMessage) => {
+
+          this.speechRecognitionService.stopRecognition();
     
           // get the recognition result ("the command that was said")
           let recognitionResult = message.data;
@@ -118,7 +132,7 @@ export class PathwayControlComponent implements OnInit {
     
             case "neuer termin": {
     
-              this.openPathwayEventCreatorDialog();
+              this.openPathwayAppointmentCreatorDialog();
 
               // get back the new event from the dialog
     
@@ -128,31 +142,31 @@ export class PathwayControlComponent implements OnInit {
     
             }
             case "hilfe": {
-    
+
               this.openHelpDialog();
               break;
             }
     
             default: {
-    
+
               this.displayErrorMessage("Dieses Sprachkommando wird nicht unterstützt.");
               break;
     
             }
           }
         }
-      });
+      }));
 
-      this.speechRecognitionService.onSpeechRecognitionStarted().subscribe({
+      this.currentSpeechRecognitionServiceSubscriptions.push(this.speechRecognitionService.onSpeechRecognitionStarted().subscribe({
         next: (message: WebSpeechRecognitionMessage) => {
 
           console.log("speech recognition started");
           this.pathIsListening = true;
 
         }
-      });
+      }));
 
-      this.speechRecognitionService.onSpeechRecognitionEnded().subscribe({
+      this.currentSpeechRecognitionServiceSubscriptions.push(this.speechRecognitionService.onSpeechRecognitionEnded().subscribe({
         next: (message: WebSpeechRecognitionMessage) => {
 
           console.log("speech recognition ended");
@@ -160,10 +174,10 @@ export class PathwayControlComponent implements OnInit {
           this.pathIsListening = false;
 
         }
-      });
+      }));
 
       
-      this.speechRecognitionService.onSpeechRecognitionError().subscribe({
+      this.currentSpeechRecognitionServiceSubscriptions.push(this.speechRecognitionService.onSpeechRecognitionError().subscribe({
         next: (message: WebSpeechRecognitionMessage) => {
 
           console.error("error occured");
@@ -175,6 +189,17 @@ export class PathwayControlComponent implements OnInit {
           this.pathIsListening = false;
 
         }
-      });
+      }));
   }
+
+  private unsubscribeFromAllSubscriptions(): void {
+
+    this.currentSpeechRecognitionServiceSubscriptions.forEach(element => {
+
+      element.unsubscribe();
+
+    })
+
+  }
+
 }

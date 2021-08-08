@@ -97,7 +97,6 @@ export class SpeechRecognitionService {
 
     // we can only start a recognition if the recognition was initialized and is available in the browser
     if (!this.speechRecognition) {
-      console.log("i got killed");
       return;
     }
 
@@ -107,6 +106,7 @@ export class SpeechRecognitionService {
 
   public stopRecognition(): void {
 
+    console.log("stopping speech recognition");
     this.speechRecognition.stop();
 
   }
