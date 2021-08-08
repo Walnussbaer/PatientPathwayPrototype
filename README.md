@@ -1,8 +1,10 @@
 # PatientPathwayPrototype
 
-A patient pathway prototype system showcasing the use of the web speech API.
+A patient pathway prototype system showcasing the use of the Web Speech API.
 
 This project is part of my thesis. 
+
+It also showcases how an Angular service using Observables can be used to use the Web Speech API. 
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 12.0.3.
 
