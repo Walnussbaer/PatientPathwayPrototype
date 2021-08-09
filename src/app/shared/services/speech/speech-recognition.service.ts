@@ -100,6 +100,7 @@ export class SpeechRecognitionService {
       return;
     }
 
+    console.log("starting speech recognition");
     this.speechRecognition.start();
 
   }

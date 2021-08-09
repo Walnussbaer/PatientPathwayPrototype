@@ -64,17 +64,23 @@ export class PathwayControlComponent implements OnInit {
 
   }
 
-  public openPathwayAppointmentCreatorDialog(): void {
+  public openAndHandlePathwayAppointmentCreatorDialog(): void {
 
-    const newPathwayEventDialog = this.dialog.open(
+    const pathwayAppointmentCreatorDialog = this.dialog.open(
       PathwayAppointmentCreatorComponent,
       {
-        width: "50%",
-        height: "50%",
+        //width: "80%",
+        //height: "50%",
       }
     );
 
-    newPathwayEventDialog.afterClosed().subscribe(result => {
+    pathwayAppointmentCreatorDialog.afterClosed().subscribe(result => {
+
+      if (result) {
+
+        this.pathwayEventEmitter.emit(result as PathwayEvent);
+
+      }
 
       // reset the speech recognition service and renew subscriptions
       this.unsubscribeFromAllSubscriptions();
@@ -132,11 +138,7 @@ export class PathwayControlComponent implements OnInit {
     
             case "neuer termin": {
     
-              this.openPathwayAppointmentCreatorDialog();
-
-              // get back the new event from the dialog
-    
-              //this.pathwayEventEmitter.emit(newPathwayEvent);
+              this.openAndHandlePathwayAppointmentCreatorDialog();
     
               break;
     

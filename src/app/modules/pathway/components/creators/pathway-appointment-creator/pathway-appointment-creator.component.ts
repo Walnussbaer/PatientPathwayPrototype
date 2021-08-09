@@ -1,9 +1,12 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { Observable, Subscription } from 'rxjs';
+import { Observable, of, Subscription } from 'rxjs';
 import { SpeechRecognitionService } from 'src/app/shared/services/speech/speech-recognition.service';
 import { WebSpeechRecognitionMessage } from 'src/app/shared/services/speech/WebSpeechRecognitionMessage';
 import { PathwayEvent } from '../../../model/PathwayEvent';
+import { concatMap, delay, mergeMap } from 'rxjs/operators';
+import { WebSpeechRecognitionMessageType } from 'src/app/shared/services/speech/WebSpeechRecognitionMessageType';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialogRef } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-pathway-appointment-creator',
@@ -13,66 +16,176 @@ import { PathwayEvent } from '../../../model/PathwayEvent';
 export class PathwayAppointmentCreatorComponent implements OnInit {
 
   // TODO: change to date
-  public appointmentDate?: any;
+  public appointmentDate?: Date;
 
-  public appointmentHeader?: string;
+  public istLastVoiceInputValid: boolean = true;
+
+  public appointmentCaption?: string;
+
+  public appointmentContent?: string;
+
+  public currentStepInAppointmentCreation = 0;
 
   public newPathwayEvent: PathwayEvent = {};
 
-  private nextVoiceInput: string = "";
+  public recording: boolean = false;
 
-  constructor(private speechRecognitionService: SpeechRecognitionService) { }
+  public creatorContentClass: string = "is-not-recording";
+
+  constructor(
+    private speechRecognitionService: SpeechRecognitionService, 
+    private matSnackbarService: MatSnackBar,
+    public dialogRef: MatDialogRef<PathwayAppointmentCreatorComponent>
+    ) { }
 
   ngOnInit(): void {
 
-    this.setupSpeechRecognitionBehaviour();
+    this.speechRecognitionService.initRecognition();
 
-    this.startVoiceGuidedEventCreation();
+    this.setupSpeechRecognitionBehaviour();
 
   }
 
-  private startVoiceGuidedEventCreation() {
 
-    // get the date for the new appointment
-    this.getDateInput().subscribe({
-      next: (result) => {
-        this.appointmentDate = result;
+  private setupSpeechRecognitionBehaviour(): void {
+
+    this.speechRecognitionService.onSpeechRecognitionStarted().subscribe({
+      next: (message: WebSpeechRecognitionMessage) => {
+
+        this.recording = true;
+        this.creatorContentClass = "is-recording";
+
       }
     });
 
-    // get the header for the new appointment
-    //this.getHeaderInput();
-
-  }
-
-
-  private setupSpeechRecognitionBehaviour() {
-
-
-  }
-
-  private getDateInput(): Observable<string> {
-
-    let dateInput: string; 
-
-    let dateSubscription: Subscription = this.speechRecognitionService.onSpeechRecognitionResultAvailable().subscribe({
+    this.speechRecognitionService.onSpeechRecognitionEnded().subscribe({
       next: (message: WebSpeechRecognitionMessage) => {
 
-        this.speechRecognitionService.stopRecognition();
-        dateInput = message.data;
-        dateSubscription.unsubscribe();
+        this.recording = false;
+        this.creatorContentClass = "is-not-recording";
+
       }
-      });
+    });
 
-      return new Observable(subscription => {
+    this.speechRecognitionService.onSpeechRecognitionError().subscribe({
+      next: (message: WebSpeechRecognitionMessage) => {
 
-        this.speechRecognitionService.initRecognition();
-        this.speechRecognitionService.startRecognition();
+        this.matSnackbarService.open(message.data,undefined,{
+          duration: 3500
+        })
 
-        subscription.next(dateInput);
-        subscription.complete();
+        this.istLastVoiceInputValid = false;
+        this.recording = false;
+        this.creatorContentClass = "is-not-recording";
 
-      });
+      }
+    });
+
+  }
+
+
+
+  public getDateInput(): void {
+
+    this.istLastVoiceInputValid = false;
+
+    this.currentStepInAppointmentCreation = 1;
+
+    let dateRecognitionSubscription: Subscription = this.speechRecognitionService.onSpeechRecognitionResultAvailable().subscribe({
+      next: (message: WebSpeechRecognitionMessage) => {
+
+        let dateValue: Date;
+
+        dateValue = new Date(message.data);
+
+        if (dateValue.toString() == "Invalid Date") {
+
+          this.matSnackbarService.open("Das ist kein valides Datum",undefined,{
+            duration:5000
+          })
+
+          this.speechRecognitionService.stopRecognition();
+          dateRecognitionSubscription.unsubscribe();
+          this.istLastVoiceInputValid = false;
+
+        } else {
+
+          this.speechRecognitionService.stopRecognition();
+          dateRecognitionSubscription.unsubscribe();
+          this.appointmentDate = dateValue;
+          this.istLastVoiceInputValid = true;
+
+        }
+      }
+    });
+
+    this.speechRecognitionService.startRecognition();
+  }
+
+  public getCaptionInput(): void {
+
+    this.istLastVoiceInputValid = false;
+
+    this.currentStepInAppointmentCreation = 2;
+
+    let captionRecognitionSubscription: Subscription = this.speechRecognitionService.onSpeechRecognitionResultAvailable().subscribe({
+
+      next: (message: WebSpeechRecognitionMessage) => {
+
+        let captionValue: string;
+
+        captionValue = message.data;
+
+        this.speechRecognitionService.stopRecognition();
+        captionRecognitionSubscription.unsubscribe();
+        this.appointmentCaption = captionValue;
+        this.istLastVoiceInputValid = true;
+
+      }
+    });
+
+    this.speechRecognitionService.startRecognition();
+
+
+  }
+
+  public getContentInput(): void {
+
+    this.istLastVoiceInputValid = false;
+
+    this.currentStepInAppointmentCreation = 3;
+
+    let contentRecognitionSubscription: Subscription = this.speechRecognitionService.onSpeechRecognitionResultAvailable().subscribe({
+
+      next: (message: WebSpeechRecognitionMessage) => {
+
+        let contentValue: string;
+
+        contentValue = message.data;
+
+        this.speechRecognitionService.stopRecognition();
+        contentRecognitionSubscription.unsubscribe();
+        this.appointmentContent = contentValue;
+        this.istLastVoiceInputValid = true;
+
+      }
+    });
+
+    this.speechRecognitionService.startRecognition();
+
+  }
+
+  public saveAppointment(): void {
+
+    this.newPathwayEvent = {
+      date: this.appointmentDate,
+      header: this.appointmentCaption,
+      content: this.appointmentContent
     }
+
+    this.dialogRef.close(this.newPathwayEvent);
+
+  }
+  
 }
 

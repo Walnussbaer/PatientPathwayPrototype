@@ -1,27 +1,26 @@
 [
-
     {
-        "date": "2021-04-03",
-        "header": "Termin 1",
-        "content": "Ich bin ein Termin"
-    },
-    {
-        "date": "2021-06-03",
-        "header": "Termin 2",
-        "content": "Ich bin ein Termin"
-    },
-    {
-        "date": "2021-08-03",
-        "header": "Termin 3",
-        "content": "Ich bin ein Termin"
-    },
-    {
-        "date": "2022-10-05",
+        "date": "Thu Jan 25 2010 00:00:00 GMT+0100",
         "header": "Termin 4",
         "content": "Ich bin ein Termin"
     },
     {
-        "date": "2023-02-01",
+        "date": "Thu Feb 01 2012 00:00:00 GMT+0100",
+        "header": "Termin 1",
+        "content": "Ich bin ein Termin"
+    },
+    {
+        "date": "Thu Apr 03 2014 00:00:00 GMT+0100",
+        "header": "Termin 2",
+        "content": "Ich bin ein Termin"
+    },
+    {
+        "date": "Thu Dec 11 2016 00:00:00 GMT+0100",
+        "header": "Termin 3",
+        "content": "Ich bin ein Termin"
+    },
+    {
+        "date": "Thu Feb 01 2018 00:00:00 GMT+0100",
         "header": "Termin 5",
         "content": "Ich bin ein Termin"
     }

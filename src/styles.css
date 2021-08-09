@@ -17,4 +17,14 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
     color: white;
 }
 
+@keyframes recording {
+
+    from {background-color: white;}
+
+    50% {background-color: red;}
+
+    to {background-color: white;}
+
+}
+
 

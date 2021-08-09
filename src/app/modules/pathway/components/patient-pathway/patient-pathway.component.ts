@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnChanges, OnInit } from '@angular/core';
 import { PathwayEvent } from '../../model/PathwayEvent';
 
 /**
@@ -11,7 +11,7 @@ import { PathwayEvent } from '../../model/PathwayEvent';
   templateUrl: './patient-pathway.component.html',
   styleUrls: ['./patient-pathway.component.css']
 })
-export class PatientPathwayComponent implements OnInit {
+export class PatientPathwayComponent implements OnInit,OnChanges {
 
   @Input() pathwayEvents : PathwayEvent[] = [];
 
@@ -40,6 +40,12 @@ export class PatientPathwayComponent implements OnInit {
   public onEntryExpand(expanded: boolean): void {
 
 
+
+  }
+
+  public ngOnChanges() {
+
+    console.log("Patient pathway changed");
 
   }
 

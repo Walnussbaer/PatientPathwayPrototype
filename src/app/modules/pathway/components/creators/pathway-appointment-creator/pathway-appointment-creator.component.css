@@ -1,0 +1,83 @@
+#recordingSymbol {
+
+    width: 50px;
+
+    height: 50px;
+  
+    border-radius: 25px;
+  
+    background-color: white;
+
+    border-color: black;
+    border-width: 2px;
+    border-style: solid;
+
+    text-align: right;
+  
+
+}
+
+.is-recording {
+
+    animation: creator-recording 1.5s infinite;
+
+}
+
+.is-not-recording {
+
+    animation: none;
+
+}
+
+@keyframes creator-recording {
+
+    from {border-color: white;}
+
+    50% {border-color: red;}
+
+    to {border-color: white;}
+
+}
+
+#creatorContent {
+
+    display: flex;
+    flex-direction: column;
+
+    justify-content: center;
+    align-items: center;
+    
+
+    gap: 10px;
+
+    padding: 20px;
+
+    border-color: black;
+    border-width: 2px;
+    border-style: solid;
+
+    word-wrap: break-word;
+
+}
+
+.centered-creator-subdiv {
+
+    display: flex;
+    flex-direction: column;
+
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    
+    gap: 10px;
+
+
+}
+
+.creator-button-div {
+
+    flex-direction: row; 
+    display: flex; 
+    gap: 10px;
+
+}

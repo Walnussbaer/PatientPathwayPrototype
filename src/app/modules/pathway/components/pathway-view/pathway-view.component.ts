@@ -32,7 +32,24 @@ export class PathwayViewComponent implements OnInit {
   public onNewPathwayEvent(newPahtwayEvent: PathwayEvent): void {
 
     this.pathwayEvents.push(newPahtwayEvent);
-    
+
+    this.sortPathwayEvents();
+
+  }
+
+  private sortPathwayEvents(): void {
+
+    this.pathwayEvents = this.pathwayEvents.sort((firstPathwayEvent,secondPathwayEvent) => {
+
+      return -1;
+      // TODO fix the sorting
+      //return ((firstPathwayEvent.date!) - (secondPathwayEvent.date!));
+
+    });
+
+    console.log("Events sorted");
+
+    console.log(this.pathwayEvents);
 
   }
 
