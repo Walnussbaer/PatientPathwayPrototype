@@ -41,9 +41,10 @@ export class PathwayViewComponent implements OnInit {
 
     this.pathwayEvents = this.pathwayEvents.sort((firstPathwayEvent,secondPathwayEvent) => {
 
-      return -1;
-      // TODO fix the sorting
-      //return ((firstPathwayEvent.date!) - (secondPathwayEvent.date!));
+      var firstDate: Date = new Date(firstPathwayEvent.date!);
+      var secondDate: Date = new Date(secondPathwayEvent.date!);
+
+      return firstDate.getTime() - secondDate.getTime();
 
     });
 
