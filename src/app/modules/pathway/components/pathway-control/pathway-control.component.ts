@@ -162,7 +162,6 @@ export class PathwayControlComponent implements OnInit {
       this.currentSpeechRecognitionServiceSubscriptions.push(this.speechRecognitionService.onSpeechRecognitionStarted().subscribe({
         next: (message: WebSpeechRecognitionMessage) => {
 
-          console.log("speech recognition started");
           this.pathIsListening = true;
 
         }
@@ -171,7 +170,6 @@ export class PathwayControlComponent implements OnInit {
       this.currentSpeechRecognitionServiceSubscriptions.push(this.speechRecognitionService.onSpeechRecognitionEnded().subscribe({
         next: (message: WebSpeechRecognitionMessage) => {
 
-          console.log("speech recognition ended");
           this.speechRecognitionService.stopRecognition();
           this.pathIsListening = false;
 
@@ -181,8 +179,6 @@ export class PathwayControlComponent implements OnInit {
       
       this.currentSpeechRecognitionServiceSubscriptions.push(this.speechRecognitionService.onSpeechRecognitionError().subscribe({
         next: (message: WebSpeechRecognitionMessage) => {
-
-          console.error("error occured");
           
           this.speechRecognitionService.stopRecognition();
 

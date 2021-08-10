@@ -32,6 +32,8 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
 
   public creatorContentClass: string = "is-not-recording";
 
+  private currentSubscription?: Subscription;
+
   constructor(
     private speechRecognitionService: SpeechRecognitionService, 
     private matSnackbarService: MatSnackBar,
@@ -61,6 +63,10 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
     this.speechRecognitionService.onSpeechRecognitionEnded().subscribe({
       next: (message: WebSpeechRecognitionMessage) => {
 
+        if (this.currentSubscription){
+          this.currentSubscription.unsubscribe();
+        }
+
         this.recording = false;
         this.creatorContentClass = "is-not-recording";
 
@@ -74,6 +80,10 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
           duration: 3500
         })
 
+        if (this.currentSubscription){
+          this.currentSubscription.unsubscribe();
+        }
+        
         this.istLastVoiceInputValid = false;
         this.recording = false;
         this.creatorContentClass = "is-not-recording";
@@ -91,7 +101,7 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
 
     this.currentStepInAppointmentCreation = 1;
 
-    let dateRecognitionSubscription: Subscription = this.speechRecognitionService.onSpeechRecognitionResultAvailable().subscribe({
+    this.currentSubscription = this.speechRecognitionService.onSpeechRecognitionResultAvailable().subscribe({
       next: (message: WebSpeechRecognitionMessage) => {
 
         let dateValue: Date;
@@ -105,13 +115,14 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
           })
 
           this.speechRecognitionService.stopRecognition();
-          dateRecognitionSubscription.unsubscribe();
+          this.currentSubscription!.unsubscribe();
           this.istLastVoiceInputValid = false;
 
         } else {
 
           this.speechRecognitionService.stopRecognition();
-          dateRecognitionSubscription.unsubscribe();
+          this.currentSubscription!.unsubscribe();
+
           this.appointmentDate = dateValue;
           this.istLastVoiceInputValid = true;
 
@@ -128,7 +139,7 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
 
     this.currentStepInAppointmentCreation = 2;
 
-    let captionRecognitionSubscription: Subscription = this.speechRecognitionService.onSpeechRecognitionResultAvailable().subscribe({
+    this.currentSubscription = this.speechRecognitionService.onSpeechRecognitionResultAvailable().subscribe({
 
       next: (message: WebSpeechRecognitionMessage) => {
 
@@ -137,7 +148,8 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
         captionValue = message.data;
 
         this.speechRecognitionService.stopRecognition();
-        captionRecognitionSubscription.unsubscribe();
+        this.currentSubscription!.unsubscribe();
+
         this.appointmentCaption = captionValue;
         this.istLastVoiceInputValid = true;
 
@@ -155,7 +167,7 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
 
     this.currentStepInAppointmentCreation = 3;
 
-    let contentRecognitionSubscription: Subscription = this.speechRecognitionService.onSpeechRecognitionResultAvailable().subscribe({
+    this.currentSubscription = this.speechRecognitionService.onSpeechRecognitionResultAvailable().subscribe({
 
       next: (message: WebSpeechRecognitionMessage) => {
 
@@ -164,7 +176,8 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
         contentValue = message.data;
 
         this.speechRecognitionService.stopRecognition();
-        contentRecognitionSubscription.unsubscribe();
+        this.currentSubscription!.unsubscribe();
+
         this.appointmentContent = contentValue;
         this.istLastVoiceInputValid = true;
 

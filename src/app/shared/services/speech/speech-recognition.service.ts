@@ -120,8 +120,6 @@ export class SpeechRecognitionService {
 
         let transcript: string = resultEvent.results[0][0].transcript;
 
-        console.log(transcript);
-
         // create the message
         let message: WebSpeechRecognitionMessage = {
           messageType: WebSpeechRecognitionMessageType.RESULT_AVAILABLE,
