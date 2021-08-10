@@ -1,6 +1,6 @@
 <div>
 
-    <mgl-timeline id="pathway" [alternate]="pathwayEntryAlternation" [side]="pathwaySide">
+    <mgl-timeline id="pathway" [alternate]="pathwayEntryAlternation" [side]="pathwaySide" [toggle]=false [focusOnOpen]=true>
 
         <mgl-timeline-entry *ngFor="let event of pathwayEvents, let i = index" (expand)="onEntryExpand($event)">
             <mgl-timeline-entry-header class="pathway-entry-header">{{event.header}}</mgl-timeline-entry-header>

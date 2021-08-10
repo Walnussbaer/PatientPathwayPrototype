@@ -31,7 +31,7 @@ export class SpeechRecognitionService {
   private speechRecognition!: SpeechRecognition;
 
   /**
-   * Contains the grammar for the speech recognition.
+   * Contains the grammar for the speech recognition. Cannot be used because of missing browser support!
    */
   private speechGrammarList!: SpeechGrammarList;
 
@@ -72,7 +72,7 @@ export class SpeechRecognitionService {
       /* the following comments are taken from https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API/Using_the_Web_Speech_API */
 
       // controls whether continuous results are captured, or just a single result each time recognition is started
-      this.speechRecognition.continuous = false
+      this.speechRecognition.continuous = false;
 
       // set the language of the recognition
       this.speechRecognition.lang = "de-DE";
@@ -119,6 +119,8 @@ export class SpeechRecognitionService {
       this.speechRecognition.addEventListener("result",(resultEvent) => {
 
         let transcript: string = resultEvent.results[0][0].transcript;
+
+        console.log(transcript);
 
         // create the message
         let message: WebSpeechRecognitionMessage = {
