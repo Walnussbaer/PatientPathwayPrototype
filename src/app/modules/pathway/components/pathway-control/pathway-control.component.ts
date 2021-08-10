@@ -1,10 +1,10 @@
 import { Component, EventEmitter, Input, OnInit, Output, ViewEncapsulation } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { FaIconComponent } from '@fortawesome/angular-fontawesome';
-import { faCoffee, faMicrophone, IconDefinition } from '@fortawesome/free-solid-svg-icons';
+import { faMicrophone, IconDefinition } from '@fortawesome/free-solid-svg-icons';
 import { Subscription } from 'rxjs';
 import { SpeechRecognitionService } from 'src/app/shared/services/speech/speech-recognition.service';
+import { SpeechSynthesisService } from 'src/app/shared/services/speech/speech-synthesis.service';
 import { WebSpeechRecognitionMessage } from 'src/app/shared/services/speech/WebSpeechRecognitionMessage';
 import { PathwayEvent } from '../../model/PathwayEvent';
 import { PathwayAppointmentCreatorComponent } from '../creators/pathway-appointment-creator/pathway-appointment-creator.component';
@@ -30,10 +30,13 @@ export class PathwayControlComponent implements OnInit {
   constructor(
     private matSnackbarService: MatSnackBar, 
     private speechRecognitionService: SpeechRecognitionService,
+    private speechSynthesisService: SpeechSynthesisService,
     private dialog: MatDialog) { }
 
   ngOnInit(): void {
 
+    this.speechSynthesisService.initSynthesis();
+    this.speechSynthesisService.getAvailableVoices();
     this.speechRecognitionAvailable = this.speechRecognitionService.initRecognition();
 
     // check whether we can use the speech recognition
@@ -197,6 +200,19 @@ export class PathwayControlComponent implements OnInit {
       element.unsubscribe();
 
     })
+
+  }
+
+  public explainPathwayControls(): void {
+
+    this.speechSynthesisService.speakUtterance("Das ist ihr persönlicher Patientenpfad");
+
+    this.speechSynthesisService.speakUtterance("Folgende Sprachbefehle stehen zur Verfügung");
+
+    
+    this.speechSynthesisService.speakUtterance("Neuer Termin: Ermöglicht das Anlegen eines neuen Termins");
+/*
+    this.speechSynthesisService.speakUtterance("Hilfe: Öffnet ein Fenster mit einer Übersicht über die Sprachbefehle"); */
 
   }
 

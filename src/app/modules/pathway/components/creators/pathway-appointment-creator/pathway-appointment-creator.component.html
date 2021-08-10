@@ -2,19 +2,19 @@
 
     <div id="creatorContent" [className]="creatorContentClass">
 
-        <h3>Herzliche Willkommen zur sprachgeführten Anlegung eines neuen Termins</h3>
+        <h3>{{welcomeUtterance}}</h3>
 
-        <button *ngIf="currentStepInAppointmentCreation==0" mat-raised-button (click)="getDateInput()">Start</button>
+        <button *ngIf="currentStepInAppointmentCreation==0 && userCanStartCreationProcess" mat-raised-button (click)="getDateInput()">Start</button>
     
         <div class="centered-creator-subdiv" *ngIf="currentStepInAppointmentCreation==1">
     
-            <p>Wann ist der Termin?</p>
+            <p id="dateQuestion">{{dateQuestion}}</p>
     
             <p *ngIf="istLastVoiceInputValid">{{appointmentDate | date}}</p>
     
             <div class="creator-button-div">
 
-                <button *ngIf="!istLastVoiceInputValid || !recording" (click)="getDateInput()" mat-raised-button color="accent">Neue Eingabe</button>
+                <button *ngIf="!recording && !speaking" (click)="getDateInput()" mat-raised-button color="accent">Neue Eingabe</button>
     
                 <button *ngIf="istLastVoiceInputValid && !recording" (click)="getCaptionInput()" mat-raised-button color="primary">Weiter</button>
 
@@ -25,15 +25,15 @@
         
         <div class="centered-creator-subdiv" *ngIf="currentStepInAppointmentCreation==2">
     
-            <p>Welchen Namen soll der Termin erhalten?</p>
+            <p>{{captionQuestion}}</p>
     
             <p>{{appointmentCaption}}</p>
 
             <div class="creator-button-div">
 
-                <button *ngIf="!recording" (click)="getDateInput()" mat-raised-button color="accent">Zurück</button>
+                <button *ngIf="!recording && !speaking" (click)="getDateInput()" mat-raised-button color="accent">Zurück</button>
 
-                <button *ngIf="!recording" (click)="getCaptionInput()" mat-raised-button color="accent">Neue Eingabe</button>
+                <button *ngIf="!recording && !speaking" (click)="getCaptionInput()" mat-raised-button color="accent">Neue Eingabe</button>
         
                 <button *ngIf="istLastVoiceInputValid && !recording" (click)="getContentInput()" mat-raised-button color="primary">Weiter</button>
                   
@@ -43,15 +43,15 @@
     
         <div class="centered-creator-subdiv" *ngIf="currentStepInAppointmentCreation==3">
     
-            <p>Möchten Sie eine Beschreibung dem Termin hinzufügen?</p>
+            <p>{{contentQuestion}}</p>
     
             <p>{{appointmentContent}}</p>
         
             <div class="creator-button-div">
 
-                <button *ngIf="!recording" (click)="getCaptionInput()" mat-raised-button color="accent">Zurück</button>
+                <button *ngIf="!recording && !speaking" (click)="getCaptionInput()" mat-raised-button color="accent">Zurück</button>
 
-                <button *ngIf="!recording" (click)="getContentInput()" mat-raised-button color="accent">Neue Eingabe</button>
+                <button *ngIf="!recording && !speaking" (click)="getContentInput()" mat-raised-button color="accent">Neue Eingabe</button>
         
                 <button *ngIf="istLastVoiceInputValid && !recording" (click)="saveAppointment()" mat-raised-button color="primary">Fertig</button>
                   

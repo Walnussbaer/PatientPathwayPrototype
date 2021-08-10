@@ -25,8 +25,7 @@ export class SpeechRecognitionService {
 
   /**
    * The instance that controls the recognition of grammars. 
-   * 
-   * We declare this public for now, so we can easily add event listeners. 
+   *
    */
   private speechRecognition!: SpeechRecognition;
 

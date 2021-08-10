@@ -52,5 +52,5 @@ export class PathwayViewComponent implements OnInit {
 
     console.log(this.pathwayEvents);
 
-  }
+  } 
 }

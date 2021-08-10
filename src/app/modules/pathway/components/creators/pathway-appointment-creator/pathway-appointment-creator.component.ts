@@ -1,5 +1,5 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { Observable, of, Subscription } from 'rxjs';
+import { concat, Observable, of, Subscription } from 'rxjs';
 import { SpeechRecognitionService } from 'src/app/shared/services/speech/speech-recognition.service';
 import { WebSpeechRecognitionMessage } from 'src/app/shared/services/speech/WebSpeechRecognitionMessage';
 import { PathwayEvent } from '../../../model/PathwayEvent';
@@ -7,6 +7,7 @@ import { concatMap, delay, mergeMap } from 'rxjs/operators';
 import { WebSpeechRecognitionMessageType } from 'src/app/shared/services/speech/WebSpeechRecognitionMessageType';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialogRef } from '@angular/material/dialog';
+import { SpeechSynthesisService } from 'src/app/shared/services/speech/speech-synthesis.service';
 
 @Component({
   selector: 'app-pathway-appointment-creator',
@@ -15,7 +16,8 @@ import { MatDialogRef } from '@angular/material/dialog';
 })
 export class PathwayAppointmentCreatorComponent implements OnInit {
 
-  // TODO: change to date
+  public userCanStartCreationProcess: boolean = false;
+
   public appointmentDate?: Date;
 
   public istLastVoiceInputValid: boolean = true;
@@ -30,12 +32,25 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
 
   public recording: boolean = false;
 
+  public speaking: boolean = false;
+
   public creatorContentClass: string = "is-not-recording";
 
-  private currentSubscription?: Subscription;
+  private currentSubscriptions?: Array<Subscription> = [];
+
+  public dateQuestion: string = "Wann ist der Termin?";
+
+  public captionQuestion: string ="Welchen Namen soll der Termin erhalten?";
+
+  public contentQuestion: string = "Sie können nun noch eine Beschreibung dem Termin hinzufügen.";
+
+  public welcomeUtterance: string = "Herzliche Willkommen zur sprachgeführten Anlegung eines neuen Termins.";
+
+
 
   constructor(
     private speechRecognitionService: SpeechRecognitionService, 
+    private speechSynthesisService: SpeechSynthesisService,
     private matSnackbarService: MatSnackBar,
     public dialogRef: MatDialogRef<PathwayAppointmentCreatorComponent>
     ) { }
@@ -43,8 +58,16 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
   ngOnInit(): void {
 
     this.speechRecognitionService.initRecognition();
-
+    this.speechSynthesisService.initSynthesis();
     this.setupSpeechRecognitionBehaviour();
+
+    this.speechSynthesisService.onSpeechEnd().subscribe({
+      complete: () => {
+        this.userCanStartCreationProcess = true;
+      }
+    })
+
+    this.speechSynthesisService.speakUtterance(this.welcomeUtterance);
 
   }
 
@@ -63,9 +86,7 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
     this.speechRecognitionService.onSpeechRecognitionEnded().subscribe({
       next: (message: WebSpeechRecognitionMessage) => {
 
-        if (this.currentSubscription){
-          this.currentSubscription.unsubscribe();
-        }
+        this.clearCurrentSubscriptions();
 
         this.recording = false;
         this.creatorContentClass = "is-not-recording";
@@ -80,9 +101,7 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
           duration: 3500
         })
 
-        if (this.currentSubscription){
-          this.currentSubscription.unsubscribe();
-        }
+        this.clearCurrentSubscriptions();
         
         this.istLastVoiceInputValid = false;
         this.recording = false;
@@ -91,9 +110,17 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
       }
     });
 
+    this.speechSynthesisService.onSpeechStart().subscribe({
+
+      next: (result) => {
+
+        this.speaking = true;
+
+      }
+
+    })
+
   }
-
-
 
   public getDateInput(): void {
 
@@ -101,7 +128,16 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
 
     this.currentStepInAppointmentCreation = 1;
 
-    this.currentSubscription = this.speechRecognitionService.onSpeechRecognitionResultAvailable().subscribe({
+    this.speechSynthesisService.onSpeechEnd().subscribe({
+      next: (result) => {
+        this.speaking = false;
+        console.log("Utterance finished!");
+        // we want to start the recognition after the question was asked by the synthesizer
+        this.speechRecognitionService.startRecognition();
+      }
+    });
+
+    this.currentSubscriptions!.push(this.speechRecognitionService.onSpeechRecognitionResultAvailable().subscribe({
       next: (message: WebSpeechRecognitionMessage) => {
 
         let dateValue: Date;
@@ -115,22 +151,23 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
           })
 
           this.speechRecognitionService.stopRecognition();
-          this.currentSubscription!.unsubscribe();
+          this.clearCurrentSubscriptions();
           this.istLastVoiceInputValid = false;
 
         } else {
 
           this.speechRecognitionService.stopRecognition();
-          this.currentSubscription!.unsubscribe();
+          this.clearCurrentSubscriptions();
 
           this.appointmentDate = dateValue;
           this.istLastVoiceInputValid = true;
 
         }
       }
-    });
+    })); 
 
-    this.speechRecognitionService.startRecognition();
+    this.speechSynthesisService.speakUtterance(this.dateQuestion);
+    
   }
 
   public getCaptionInput(): void {
@@ -139,7 +176,16 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
 
     this.currentStepInAppointmentCreation = 2;
 
-    this.currentSubscription = this.speechRecognitionService.onSpeechRecognitionResultAvailable().subscribe({
+    this.speechSynthesisService.onSpeechEnd().subscribe({
+      next: (result) => {
+        this.speaking = false;
+        console.log("Utterance finished!");
+        // we want to start the recognition after the question was asked by the synthesizer
+        this.speechRecognitionService.startRecognition();
+      }
+    });
+
+    this.currentSubscriptions!.push(this.speechRecognitionService.onSpeechRecognitionResultAvailable().subscribe({
 
       next: (message: WebSpeechRecognitionMessage) => {
 
@@ -148,16 +194,15 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
         captionValue = message.data;
 
         this.speechRecognitionService.stopRecognition();
-        this.currentSubscription!.unsubscribe();
+        this.clearCurrentSubscriptions();
 
         this.appointmentCaption = captionValue;
         this.istLastVoiceInputValid = true;
 
       }
-    });
+    }));
 
-    this.speechRecognitionService.startRecognition();
-
+    this.speechSynthesisService.speakUtterance(this.captionQuestion);
 
   }
 
@@ -167,7 +212,16 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
 
     this.currentStepInAppointmentCreation = 3;
 
-    this.currentSubscription = this.speechRecognitionService.onSpeechRecognitionResultAvailable().subscribe({
+    this.speechSynthesisService.onSpeechEnd().subscribe({
+      next: (result) => {
+        this.speaking = false;
+        console.log("Utterance finished!");
+        // we want to start the recognition after the question was asked by the synthesizer
+        this.speechRecognitionService.startRecognition();
+      }
+    });
+
+    this.currentSubscriptions!.push(this.speechRecognitionService.onSpeechRecognitionResultAvailable().subscribe({
 
       next: (message: WebSpeechRecognitionMessage) => {
 
@@ -176,16 +230,15 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
         contentValue = message.data;
 
         this.speechRecognitionService.stopRecognition();
-        this.currentSubscription!.unsubscribe();
+        this.clearCurrentSubscriptions();
 
         this.appointmentContent = contentValue;
         this.istLastVoiceInputValid = true;
 
       }
-    });
+    }));
 
-    this.speechRecognitionService.startRecognition();
-
+    this.speechSynthesisService.speakUtterance(this.contentQuestion);
   }
 
   public saveAppointment(): void {
@@ -197,6 +250,16 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
     }
 
     this.dialogRef.close(this.newPathwayEvent);
+
+  }
+
+  private clearCurrentSubscriptions(): void {
+
+    this.currentSubscriptions?.forEach(subscription => {
+
+      subscription.unsubscribe();
+
+    })
 
   }
   
