@@ -31,6 +31,11 @@ export class SpeechRecognitionService {
   private speechRecognition!: SpeechRecognition;
 
   /**
+   * Indicates whether the service is currently recognizing spoken voice. 
+   */
+  private isRecognizing: boolean = false;
+
+  /**
    * Contains the grammar for the speech recognition. Cannot be used because of missing browser support!
    */
   private speechGrammarList!: SpeechGrammarList;
@@ -79,7 +84,7 @@ export class SpeechRecognitionService {
       this.speechRecognition.lang = "de-DE";
 
       // defines whether the speech recognition system should return interim results or final results
-      this.speechRecognition.interimResults = false;
+      this.speechRecognition.interimResults = true;
 
       // sets the number of alternative potential matches that should be returned per result
       // This can sometimes be useful, say if a result is not completely clear and you want to display a list if alternatives for the user to choose the correct one from.
@@ -101,11 +106,12 @@ export class SpeechRecognitionService {
   public startRecognition(): void {
 
     // we can only start a recognition if the recognition was initialized and is available in the browser
-    if (!this.speechRecognition) {
+    if (!this.speechRecognition || this.isRecognizing) {
       return;
     }
 
     this.speechRecognition.start();
+    this.isRecognizing = true;
     console.log("Started the speech recognition");
 
   }
@@ -116,6 +122,7 @@ export class SpeechRecognitionService {
   public stopRecognition(): void {
 
     this.speechRecognition.stop();
+    this.isRecognizing = false;
     console.log("Stopped the speech recognition");
 
   }
@@ -162,6 +169,8 @@ export class SpeechRecognitionService {
 
     return new Observable((subscriber) => {
 
+      this.isRecognizing = true;
+
       // the observable shall emit values when the speech recognition started the recognition
       this.speechRecognition.addEventListener("start",(startEvent) => {
         
@@ -184,6 +193,8 @@ export class SpeechRecognitionService {
   public onSpeechRecognitionEnded(): Observable<WebSpeechRecognitionMessage> {
 
     return new Observable((subscriber) => {
+
+      this.isRecognizing = false;
 
       // the observable shall emit values when the speech recognition stopped the recognition
       this.speechRecognition.addEventListener("end",(endEvent) => {
@@ -210,6 +221,9 @@ export class SpeechRecognitionService {
 
       // the observable shall emit values when an error occured during the speech recognition
       this.speechRecognition.addEventListener("error",(errorEvent) => {
+
+        console.error("WSA error occured");
+        this.isRecognizing = false;
 
         let customErrorMessage = "";
 

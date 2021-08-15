@@ -64,6 +64,8 @@ export class PathwayControlComponent implements OnInit {
     } else {
 
       this.setupSpeechRecognitionBehaviour();
+      // start to listen for voice commands
+      this.speechRecognitionService.startRecognition();
 
     }
   }
@@ -87,8 +89,7 @@ export class PathwayControlComponent implements OnInit {
    */
   public onActivateVoiceControl(): void {
 
-    this.speechRecognitionService.startRecognition();
-    this.pathIsListening = true;
+    this.restartSpeechRecognition();
 
   }
 
@@ -98,7 +99,6 @@ export class PathwayControlComponent implements OnInit {
   public onDeactivateVoiceControl(): void {
 
     this.speechRecognitionService.stopRecognition();
-    this.pathIsListening = false;
 
   }
 
@@ -113,7 +113,14 @@ export class PathwayControlComponent implements OnInit {
         width: "300px",
         height: "80%",
       }
-    )
+    );
+
+    helpDialogRef.afterClosed().subscribe(result => {
+      this.setupSpeechRecognitionBehaviour();
+      this.speechRecognitionService.startRecognition();
+      
+    })
+
   }
 
   /**
@@ -166,12 +173,18 @@ export class PathwayControlComponent implements OnInit {
             case "hilfe": {
 
               this.openHelpDialog();
+
               break;
             }
     
             default: {
 
               this.displayErrorMessage("Dieses Sprachkommando wird nicht unterstützt.");
+
+              // restart recognition
+              //this.setupSpeechRecognitionBehaviour();
+              this.restartSpeechRecognition();
+
               break;
     
             }
@@ -190,8 +203,7 @@ export class PathwayControlComponent implements OnInit {
       this.currentSpeechRecognitionServiceSubscriptions.push(this.speechRecognitionService.onSpeechRecognitionEnded().subscribe({
         next: (message: WebSpeechRecognitionMessage) => {
 
-          this.speechRecognitionService.stopRecognition();
-          this.pathIsListening = false;
+         this.pathIsListening = false;
 
         }
       }));
@@ -200,12 +212,13 @@ export class PathwayControlComponent implements OnInit {
       this.currentSpeechRecognitionServiceSubscriptions.push(this.speechRecognitionService.onSpeechRecognitionError().subscribe({
         next: (message: WebSpeechRecognitionMessage) => {
           
-          this.speechRecognitionService.stopRecognition();
+          console.warn(message.data);
 
-          this.displayErrorMessage(message.data);     
+          // when an error occured, we just restart the recoginition for now
+          // TODO in a future implementation, the error handling at this point should be more precise, e.g., if the error indicates that the user has no microphone enabled, then we shouln't just restart the recognition
+          this.restartSpeechRecognition();
 
-          this.pathIsListening = false;
-
+          //this.displayErrorMessage(message.data);   
         }
       }));
   }
@@ -221,12 +234,18 @@ export class PathwayControlComponent implements OnInit {
 
     })
 
+    this.currentSpeechRecognitionServiceSubscriptions = [];
+
   }
 
   /**
    * Gets called when the speech recognition recognized that the user wants to create a new pathway event. 
    */
      private openAndHandlePathwayAppointmentCreatorDialog(): void {
+
+      this.speechRecognitionService.stopRecognition();
+      this.pathIsListening = false;
+      this.unsubscribeFromAllSubscriptions();
 
       const pathwayAppointmentCreatorDialog = this.dialog.open(
         PathwayAppointmentCreatorComponent,
@@ -245,11 +264,23 @@ export class PathwayControlComponent implements OnInit {
   
         }
   
-        // reset the speech recognition service and renew subscriptions
-        this.unsubscribeFromAllSubscriptions();
-        this.speechRecognitionService.initRecognition();
-        this.setupSpeechRecognitionBehaviour();
+        this.restartSpeechRecognition();
       });
   
+    }
+
+    /**
+     * Reinitializes the speech recognition service, the component behaviour and starts the recognition.
+     */
+    private restartSpeechRecognition() {
+
+      console.log("Restarting speech recognition");
+      this.unsubscribeFromAllSubscriptions();
+      this.speechRecognitionService.stopRecognition();
+
+      this.speechRecognitionService.initRecognition();
+      this.setupSpeechRecognitionBehaviour();
+      this.speechRecognitionService.startRecognition();
+
     }
 }
