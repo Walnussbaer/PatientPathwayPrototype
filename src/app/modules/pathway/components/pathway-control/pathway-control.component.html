@@ -1,8 +1,7 @@
 <div id="pathwayControl">
 
-    <h1>Mein Patientenpfad</h1>
+    <h1 id="controlCaption">Mein Patientenpfad</h1>
     <!--this is the control panel for working with the patient pathway-->
-    <button disabled mat-raised-button color="primary">Neuer Termin</button>
 
     <button mat-raised-button color="primary" *ngIf="speechRecognitionAvailable && !pathIsListening" (click)="onActivateVoiceControl()">
         <fa-icon id="voiceControlIndicatorIcon" [icon]="voiceControlIcon"></fa-icon>
@@ -12,9 +11,11 @@
         <fa-icon id="voiceControlIndicatorIcon" [icon]="voiceControlIcon"></fa-icon>
     </button>
 
-    <button mat-raised-button color="accent" (click)="openHelpDialog()">Sprachbefehle anzeigen</button>
+    <p id="controlDescription">Für eine Übersicht über die Sprachbefehle, sagen Sie "Hilfe".</p>
 
-    <button mat-raised-button color="accent" (click)="explainPathwayControls()">Erklär mir meinen Pfad</button>
+    <!--<button mat-raised-button color="accent" (click)="openHelpDialog()">Sprachbefehle anzeigen</button>-->
+
+    <!--<button mat-raised-button color="accent" (click)="explainPathwayControls()">Erklär mir meinen Pfad</button>-->
  
 
 </div>

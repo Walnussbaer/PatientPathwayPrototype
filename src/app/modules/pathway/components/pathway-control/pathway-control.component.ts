@@ -116,8 +116,8 @@ export class PathwayControlComponent implements OnInit {
     );
 
     helpDialogRef.afterClosed().subscribe(result => {
-      this.setupSpeechRecognitionBehaviour();
-      this.speechRecognitionService.startRecognition();
+      
+      this.restartSpeechRecognition();
       
     })
 
@@ -228,9 +228,9 @@ export class PathwayControlComponent implements OnInit {
    */
   private unsubscribeFromAllSubscriptions(): void {
 
-    this.currentSpeechRecognitionServiceSubscriptions.forEach(element => {
+    this.currentSpeechRecognitionServiceSubscriptions.forEach(subscription => {
 
-      element.unsubscribe();
+      subscription.unsubscribe();
 
     })
 
