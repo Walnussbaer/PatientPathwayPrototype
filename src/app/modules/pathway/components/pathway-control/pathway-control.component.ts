@@ -17,14 +17,29 @@ import { PathwayControlHelpDialogComponent } from '../pathway-control-help-dialo
 })
 export class PathwayControlComponent implements OnInit {
 
+  /**
+   * This event emitter emits an event when a new pathway event got created by the user. 
+   */
   @Output() pathwayEventEmitter = new EventEmitter<PathwayEvent>();
 
+  /**
+   * Indicated whether the speech recognition is availabe for usage. 
+   */
   public speechRecognitionAvailable: boolean = false;
 
+  /**
+   * Indicates whether the component is currently listening for user input via microphone. 
+   */
   public pathIsListening: boolean = false;
 
+  /**
+   * The definition of the microphone activation button. 
+   */
   public voiceControlIcon: IconDefinition = faMicrophone;
 
+  /**
+   * The currently active subscriptions for observables. 
+   */
   private currentSpeechRecognitionServiceSubscriptions: Array<Subscription> = [];
 
   constructor(
@@ -53,6 +68,9 @@ export class PathwayControlComponent implements OnInit {
     }
   }
 
+  /**
+   * Gets called when the user pressed the microphone button. 
+   */
   public onActivateVoiceControl(): void {
 
     this.speechRecognitionService.startRecognition();
@@ -60,6 +78,9 @@ export class PathwayControlComponent implements OnInit {
 
   }
 
+  /**
+   * Gets called when the user pressed the microphone button while the speech recognition is running.
+   */
   public onDeactivateVoiceControl(): void {
 
     this.speechRecognitionService.stopRecognition();
@@ -67,6 +88,9 @@ export class PathwayControlComponent implements OnInit {
 
   }
 
+  /**
+   * Gets called when the speech recognition recognized that the user wants to create a new pathway event. 
+   */
   public openAndHandlePathwayAppointmentCreatorDialog(): void {
 
     const pathwayAppointmentCreatorDialog = this.dialog.open(
@@ -77,6 +101,7 @@ export class PathwayControlComponent implements OnInit {
       }
     );
 
+    // define what shall happen after the pathway event creator component dialog is closed
     pathwayAppointmentCreatorDialog.afterClosed().subscribe(result => {
 
       if (result) {
@@ -93,6 +118,9 @@ export class PathwayControlComponent implements OnInit {
 
   }
 
+  /**
+   * Gets called when the speech recognition recognized that the user needs help. 
+   */
   public openHelpDialog(): void {
 
     const helpDialogRef = this.dialog.open(
@@ -104,6 +132,11 @@ export class PathwayControlComponent implements OnInit {
     )
   }
 
+  /**
+   * Use this method to display user friendly error message to the user. 
+   * 
+   * @param errorMessage the error message that shall be displayed 
+   */
   private displayErrorMessage(errorMessage: string): void {
 
     this.matSnackbarService.open(
@@ -193,6 +226,9 @@ export class PathwayControlComponent implements OnInit {
       }));
   }
 
+  /**
+   * Clean up all currently active subscriptions. 
+   */
   private unsubscribeFromAllSubscriptions(): void {
 
     this.currentSpeechRecognitionServiceSubscriptions.forEach(element => {
@@ -203,16 +239,18 @@ export class PathwayControlComponent implements OnInit {
 
   }
 
+  /**
+   * Gets called when the user wants an explanation of the pathway controls. 
+   */
   public explainPathwayControls(): void {
 
     this.speechSynthesisService.speakUtterance("Das ist ihr persönlicher Patientenpfad");
 
     this.speechSynthesisService.speakUtterance("Folgende Sprachbefehle stehen zur Verfügung");
 
-    
     this.speechSynthesisService.speakUtterance("Neuer Termin: Ermöglicht das Anlegen eines neuen Termins");
-/*
-    this.speechSynthesisService.speakUtterance("Hilfe: Öffnet ein Fenster mit einer Übersicht über die Sprachbefehle"); */
+
+    this.speechSynthesisService.speakUtterance("Hilfe: Öffnet ein Fenster mit einer Übersicht über die Sprachbefehle"); 
 
   }
 

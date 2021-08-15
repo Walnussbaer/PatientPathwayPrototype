@@ -13,6 +13,9 @@ import { PathwayEvent } from '../../model/PathwayEvent';
 })
 export class PatientPathwayComponent implements OnInit,OnChanges {
 
+  /**
+   * The events the pathway shall display. 
+   */
   @Input() pathwayEvents : PathwayEvent[] = [];
 
   /**
@@ -21,7 +24,7 @@ export class PatientPathwayComponent implements OnInit,OnChanges {
   public pathwayDotSize: number = 60;
 
   /**
-   * Set to true if you want to pathway to have it's entries alternat the side. 
+   * Set to true if you want the pathway to have it's entries alternat the side. 
    */
   public pathwayEntryAlternation: boolean = false;
 
@@ -33,14 +36,6 @@ export class PatientPathwayComponent implements OnInit,OnChanges {
   constructor() { }
 
   ngOnInit(): void {
-
-
-  }
-
-  public onEntryExpand(expanded: boolean): void {
-
-
-
   }
 
   public ngOnChanges() {

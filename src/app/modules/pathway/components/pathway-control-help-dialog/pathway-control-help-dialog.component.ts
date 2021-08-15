@@ -8,14 +8,10 @@ import { SpeechRecognitionService } from 'src/app/shared/services/speech/speech-
 })
 export class PathwayControlHelpDialogComponent implements OnInit {
 
-  public creatorIsListening: boolean = false;
 
-  constructor(private speechRecognitionService: SpeechRecognitionService) { }
+  constructor() { }
 
   ngOnInit(): void {
-
-    this.speechRecognitionService.initRecognition();
-
   }
 
 }

@@ -10,6 +10,9 @@ import { PathwayEvent } from '../../model/PathwayEvent';
 })
 export class PathwayViewComponent implements OnInit {
 
+  /**
+   * The events of the patient pathway that can be worked with in this view. 
+   */
   public pathwayEvents: PathwayEvent[] = [];
 
   constructor(private pathwayService: PathwayService) { }
@@ -26,18 +29,24 @@ export class PathwayViewComponent implements OnInit {
         console.error("Could not retrieve pathway data!");
       }
     });
-
   }
 
+  /**
+   * Gets called when a new event got created, e.g. by the user. 
+   * 
+   * @param newPahtwayEvent the new pathway event that got created
+   */
   public onNewPathwayEvent(newPahtwayEvent: PathwayEvent): void {
 
     this.pathwayEvents.push(newPahtwayEvent);
 
-    this.sortPathwayEvents();
-
+    this.sortPathwayEventsByDate();
   }
 
-  private sortPathwayEvents(): void {
+  /**
+   * Sorts the pathway entries by date. 
+   */
+  private sortPathwayEventsByDate(): void {
 
     this.pathwayEvents = this.pathwayEvents.sort((firstPathwayEvent,secondPathwayEvent) => {
 
@@ -48,9 +57,6 @@ export class PathwayViewComponent implements OnInit {
 
     });
 
-    console.log("Events sorted");
-
-    console.log(this.pathwayEvents);
-
+    console.log("Pathway events sorted");
   } 
 }

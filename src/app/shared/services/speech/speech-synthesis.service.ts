@@ -50,7 +50,9 @@ export class SpeechSynthesisService {
       return;
     }
 
-    this.speechSynthesisUtterance.text = message;
+    this.speechSynthesisUtterance = new SpeechSynthesisUtterance(message);
+
+    console.log("Speaking" + message);
 
     this.speechSynthesis.speak(this.speechSynthesisUtterance);
   }

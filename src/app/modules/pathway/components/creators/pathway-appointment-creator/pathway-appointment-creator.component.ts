@@ -46,8 +46,6 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
 
   public welcomeUtterance: string = "Herzliche Willkommen zur sprachgeführten Anlegung eines neuen Termins.";
 
-
-
   constructor(
     private speechRecognitionService: SpeechRecognitionService, 
     private speechSynthesisService: SpeechSynthesisService,
