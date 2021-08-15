@@ -251,7 +251,7 @@ export class PathwayControlComponent implements OnInit {
         PathwayAppointmentCreatorComponent,
         {
           //width: "80%",
-          //height: "50%",
+          //height: "30%",
         }
       );
   

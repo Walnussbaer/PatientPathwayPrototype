@@ -8,6 +8,7 @@ import { WebSpeechRecognitionMessageType } from 'src/app/shared/services/speech/
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialogRef } from '@angular/material/dialog';
 import { SpeechSynthesisService } from 'src/app/shared/services/speech/speech-synthesis.service';
+import { faMicrophone, IconDefinition } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
   selector: 'app-pathway-appointment-creator',
@@ -20,23 +21,31 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
 
   public appointmentDate?: Date;
 
-  public istLastVoiceInputValid: boolean = true;
-
   public appointmentCaption?: string;
 
   public appointmentContent?: string;
+
+  public istLastVoiceInputValid: boolean = true;
 
   public currentStepInAppointmentCreation = 0;
 
   public newPathwayEvent: PathwayEvent = {};
 
-  public recording: boolean = false;
+  public recordingFormInput: boolean = false;
+
+  public listeningForControlCommmand: boolean = false;
+
+  public controlIndicatorIconClass: string = "not-waiting-for-command";
+
+  public voiceControlIcon: IconDefinition = faMicrophone;
 
   public speaking: boolean = false;
 
   public creatorContentClass: string = "is-not-recording";
 
-  private currentSubscriptions?: Array<Subscription> = [];
+  private currentFormSubscriptions: Array<Subscription> = [];
+
+  private currentControlSubscriptions: Array<Subscription> = [];
 
   public dateQuestion: string = "Wann ist der Termin?";
 
@@ -51,75 +60,29 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
     private speechSynthesisService: SpeechSynthesisService,
     private matSnackbarService: MatSnackBar,
     public dialogRef: MatDialogRef<PathwayAppointmentCreatorComponent>
-    ) { }
+    ) {
+      this.dialogRef.disableClose = true;
+     }
 
   ngOnInit(): void {
 
-    this.speechRecognitionService.initRecognition();
     this.speechSynthesisService.initSynthesis();
-    this.setupSpeechRecognitionBehaviour();
+    this.speechRecognitionService.initRecognition();
 
     this.speechSynthesisService.onSpeechEnd().subscribe({
       complete: () => {
         this.userCanStartCreationProcess = true;
+        this.listenForNextControlInput(this.getDateInput);
       }
     })
 
+    // welcome the user on initialization of the component
     this.speechSynthesisService.speakUtterance(this.welcomeUtterance);
-
   }
 
-
-  private setupSpeechRecognitionBehaviour(): void {
-
-    this.speechRecognitionService.onSpeechRecognitionStarted().subscribe({
-      next: (message: WebSpeechRecognitionMessage) => {
-
-        this.recording = true;
-        this.creatorContentClass = "is-recording";
-
-      }
-    });
-
-    this.speechRecognitionService.onSpeechRecognitionEnded().subscribe({
-      next: (message: WebSpeechRecognitionMessage) => {
-
-        this.clearCurrentSubscriptions();
-
-        this.recording = false;
-        this.creatorContentClass = "is-not-recording";
-
-      }
-    });
-
-    this.speechRecognitionService.onSpeechRecognitionError().subscribe({
-      next: (message: WebSpeechRecognitionMessage) => {
-
-        this.matSnackbarService.open(message.data,undefined,{
-          duration: 3500
-        })
-
-        this.clearCurrentSubscriptions();
-        
-        this.istLastVoiceInputValid = false;
-        this.recording = false;
-        this.creatorContentClass = "is-not-recording";
-
-      }
-    });
-
-    this.speechSynthesisService.onSpeechStart().subscribe({
-
-      next: (result) => {
-
-        this.speaking = true;
-
-      }
-
-    })
-
-  }
-
+  /**
+   * Start the process for getting the date of the new appointment. 
+   */
   public getDateInput(): void {
 
     this.istLastVoiceInputValid = false;
@@ -128,15 +91,20 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
 
     this.speechSynthesisService.onSpeechEnd().subscribe({
       next: (result) => {
+
         this.speaking = false;
         console.log("Utterance finished!");
+
         // we want to start the recognition after the question was asked by the synthesizer
-        this.speechRecognitionService.startRecognition();
+        this.listenForNextFormInput()
       }
     });
 
-    this.currentSubscriptions!.push(this.speechRecognitionService.onSpeechRecognitionResultAvailable().subscribe({
+    this.currentFormSubscriptions!.push(this.speechRecognitionService.onSpeechRecognitionResultAvailable().subscribe({
       next: (message: WebSpeechRecognitionMessage) => {
+
+        this.speechRecognitionService.stopRecognition();
+        
 
         let dateValue: Date;
 
@@ -146,29 +114,26 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
 
           this.matSnackbarService.open("Das ist kein valides Datum",undefined,{
             duration:5000
-          })
+          });
 
-          this.speechRecognitionService.stopRecognition();
-          this.clearCurrentSubscriptions();
           this.istLastVoiceInputValid = false;
 
         } else {
 
-          this.speechRecognitionService.stopRecognition();
-          this.clearCurrentSubscriptions();
-
           this.appointmentDate = dateValue;
           this.istLastVoiceInputValid = true;
-
         }
+
+        this.listenForNextControlInput(this.getHeaderInput);
       }
     })); 
-
     this.speechSynthesisService.speakUtterance(this.dateQuestion);
-    
   }
 
-  public getCaptionInput(): void {
+  /**
+   * Start the process for getting the caption of the new appointment. 
+   */
+  public getHeaderInput(): void {
 
     this.istLastVoiceInputValid = false;
 
@@ -176,34 +141,38 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
 
     this.speechSynthesisService.onSpeechEnd().subscribe({
       next: (result) => {
+
         this.speaking = false;
         console.log("Utterance finished!");
+
         // we want to start the recognition after the question was asked by the synthesizer
-        this.speechRecognitionService.startRecognition();
+        this.listenForNextFormInput();
       }
     });
 
-    this.currentSubscriptions!.push(this.speechRecognitionService.onSpeechRecognitionResultAvailable().subscribe({
+    this.currentFormSubscriptions!.push(this.speechRecognitionService.onSpeechRecognitionResultAvailable().subscribe({
 
       next: (message: WebSpeechRecognitionMessage) => {
+
+        this.speechRecognitionService.stopRecognition();
 
         let captionValue: string;
 
         captionValue = message.data;
 
-        this.speechRecognitionService.stopRecognition();
-        this.clearCurrentSubscriptions();
-
         this.appointmentCaption = captionValue;
         this.istLastVoiceInputValid = true;
 
+        this.listenForNextControlInput(this.getContentInput);
+
       }
     }));
-
     this.speechSynthesisService.speakUtterance(this.captionQuestion);
-
   }
 
+  /**
+   * Start the process for getting the content of the new appointment. 
+   */
   public getContentInput(): void {
 
     this.istLastVoiceInputValid = false;
@@ -215,20 +184,19 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
         this.speaking = false;
         console.log("Utterance finished!");
         // we want to start the recognition after the question was asked by the synthesizer
-        this.speechRecognitionService.startRecognition();
+        this.listenForNextFormInput();
       }
     });
 
-    this.currentSubscriptions!.push(this.speechRecognitionService.onSpeechRecognitionResultAvailable().subscribe({
+    this.currentFormSubscriptions!.push(this.speechRecognitionService.onSpeechRecognitionResultAvailable().subscribe({
 
       next: (message: WebSpeechRecognitionMessage) => {
+
+        this.speechRecognitionService.stopRecognition();
 
         let contentValue: string;
 
         contentValue = message.data;
-
-        this.speechRecognitionService.stopRecognition();
-        this.clearCurrentSubscriptions();
 
         this.appointmentContent = contentValue;
         this.istLastVoiceInputValid = true;
@@ -239,6 +207,9 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
     this.speechSynthesisService.speakUtterance(this.contentQuestion);
   }
 
+  /**
+   * Construct the new appointment, pass it to the parent component and close the dialog.
+   */
   public saveAppointment(): void {
 
     this.newPathwayEvent = {
@@ -248,18 +219,193 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
     }
 
     this.dialogRef.close(this.newPathwayEvent);
+  }
+
+  /**
+   * Start the recognition and listen for next form input. 
+   */
+  private listenForNextFormInput(): void {
+
+    this.speechRecognitionService.stopRecognition()
+
+    this.setupFormInputBehaviour();
+    this.speechRecognitionService.startRecognition();
 
   }
 
-  private clearCurrentSubscriptions(): void {
+  /**
+   * Start the recognition and listen for next control input. 
+   * 
+   * @param nextFunction 
+   */
+  private listenForNextControlInput(nextFunction: () => void): void {
 
-    this.currentSubscriptions?.forEach(subscription => {
+    this.speechRecognitionService.stopRecognition();
+    this.clearCommandInputSubscriptions();
 
-      subscription.unsubscribe();
+    this.speechRecognitionService.initRecognition();
+    this.setupControlInputBehaviour(nextFunction);
+    this.speechRecognitionService.startRecognition();
 
-    })
+  }
 
+  /**
+   * Setup behaviour of speech recognition for handling command input from the user. 
+   * 
+   * @param nextFunction 
+   */
+  private setupControlInputBehaviour(nextStep: () => void): void {
+
+    this.currentControlSubscriptions.push(this.speechRecognitionService.onSpeechRecognitionResultAvailable().subscribe({
+      next: (result: WebSpeechRecognitionMessage) => {
+
+        let recognitionResult: string = result.data;
+        recognitionResult = recognitionResult.toLowerCase();
+        this.controlIndicatorIconClass = "not-waiting-for-command";
+        this.listeningForControlCommmand = false;
+
+        this.clearCommandInputSubscriptions();
+
+        // cancel the creation should always be possible
+        if (recognitionResult == "dialog beenden") {
+          console.log("closing appointment creation dialog");
+          this.speechRecognitionService.stopRecognition();
+          this.dialogRef.close(null);
+        }
+
+        // in case we just started the appoint creation, we can only start or abbort the process
+        if (this.currentStepInAppointmentCreation == 0) {
+
+          switch(recognitionResult) {
+            case "start": {
+              console.log("starting creation process");
+              nextStep.call(this);
+              break;
+            }
+
+            default: {
+              console.log("user used incorrect command");
+              this.listenForNextControlInput(nextStep);
+              this.controlIndicatorIconClass = "waiting-for-command"
+              this.listeningForControlCommmand = true;
+              break;
+            }
+          }
+        }
+        
+        if (this.currentStepInAppointmentCreation > 0) {
+          switch (recognitionResult) {
+
+            case "weiter": {
+              this.clearCommandInputSubscriptions();
+              console.log("asking for next user input")
+              nextStep.call(this);
+              break;
+            }
+          }
+        }
+      }
+    }));
+
+    this.currentControlSubscriptions.push(this.speechRecognitionService.onSpeechRecognitionStarted().subscribe({
+      next: (restult: WebSpeechRecognitionMessage) => {
+
+        this.controlIndicatorIconClass = "waiting-for-command"
+        this.listeningForControlCommmand = true;
+      }
+    }))
+
+    this.currentControlSubscriptions.push(this.speechRecognitionService.onSpeechRecognitionEnded().subscribe({
+      next: (result: WebSpeechRecognitionMessage) => {
+        
+        this.listenForNextControlInput(nextStep);
+        this.controlIndicatorIconClass = "waiting-for-command";
+        this.listeningForControlCommmand = true;
+
+      }
+    }));
+
+    this.currentControlSubscriptions.push(this.speechRecognitionService.onSpeechRecognitionError().subscribe({
+      next: (result: WebSpeechRecognitionMessage) => {
+        
+        this.listenForNextControlInput(nextStep);
+        this.controlIndicatorIconClass = "waiting-for-command";
+        this.listeningForControlCommmand = true;
+
+      }
+    }));
+  }
+
+  /**
+   * Setup behaviour of speech recognition for handling form input from the user. 
+   */
+  private setupFormInputBehaviour(): void {
+
+    this.currentFormSubscriptions.push(this.speechRecognitionService.onSpeechRecognitionStarted().subscribe({
+      next: (message: WebSpeechRecognitionMessage) => {
+
+        this.recordingFormInput = true;
+        this.creatorContentClass = "is-recording";
+
+      }
+    }));
+
+    this.currentFormSubscriptions.push(this.speechRecognitionService.onSpeechRecognitionEnded().subscribe({
+      next: (message: WebSpeechRecognitionMessage) => {
+
+        this.clearFormInputSubscriptions();
+
+        this.recordingFormInput = false;
+        this.creatorContentClass = "is-not-recording";
+
+      }
+    }));
+
+    this.currentFormSubscriptions.push(this.speechRecognitionService.onSpeechRecognitionError().subscribe({
+      next: (message: WebSpeechRecognitionMessage) => {
+
+        this.matSnackbarService.open(message.data,undefined,{
+          duration: 3500
+        })
+
+        this.clearFormInputSubscriptions();
+        
+        this.istLastVoiceInputValid = false;
+        this.recordingFormInput = false;
+        this.creatorContentClass = "is-not-recording";
+
+      }
+    }));
+
+    this.currentFormSubscriptions.push(this.speechSynthesisService.onSpeechStart().subscribe({
+
+      next: (result) => {
+
+        this.speaking = true;
+
+      }
+
+    }));
   }
   
+  /**
+   * Clear all subscriptions for working with form inputs from the user. 
+   */
+     private clearFormInputSubscriptions(): void {
+
+      this.currentFormSubscriptions?.forEach(subscription => {
+        subscription.unsubscribe();
+      })
+    }
+  
+    /**
+     * Clear all subscriptions for working with control inputs from the user. 
+     */
+    private clearCommandInputSubscriptions(): void {
+  
+      this.currentControlSubscriptions.forEach(subscription => {
+        subscription.unsubscribe();
+      })
+    }
 }
 

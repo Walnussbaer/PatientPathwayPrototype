@@ -11,7 +11,7 @@
         <fa-icon id="voiceControlIndicatorIcon" [icon]="voiceControlIcon"></fa-icon>
     </button>
 
-    <p id="controlDescription">Für eine Übersicht über die Sprachbefehle, sagen Sie "Hilfe".</p>
+    <p *ngIf="pathIsListening" id="controlDescription">Für eine Übersicht über die Sprachbefehle, sagen Sie "Hilfe".</p>
 
     <!--<button mat-raised-button color="accent" (click)="openHelpDialog()">Sprachbefehle anzeigen</button>-->
 

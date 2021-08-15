@@ -81,3 +81,38 @@
     gap: 10px;
 
 }
+
+#voiceControlIndicatorIcon {
+    color: white;
+    margin-bottom: 10px !important;
+}
+
+#waitingForCommandDescription {
+    color: white;
+}
+
+.waiting-for-command {
+
+    animation: recording-control-input 2s infinite;
+}
+
+.not-waiting-for-command {
+
+    animation: none;
+}
+
+#voiceControlIndicatorArea {
+    background-color: black;
+    text-align: center;
+    padding: 10px;
+}
+
+@keyframes recording-control-input {
+
+    from {color: white;}
+
+    50% {color: red;}
+
+    to {color: white;}
+
+}
