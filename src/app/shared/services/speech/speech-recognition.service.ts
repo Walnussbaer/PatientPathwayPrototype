@@ -4,19 +4,20 @@ import { Observable } from 'rxjs';
 import { WebSpeechRecognitionMessage } from './WebSpeechRecognitionMessage';
 import { WebSpeechRecognitionMessageType } from './WebSpeechRecognitionMessageType';
 
-/* At the moment, we need to use the Google implementation, so we need to declare these variables here,
- otherwise, Angular will not recognize them, becauase webkitSpeechRecognition is not a library 
-*/
+/**
+ * Since the only currently available implementation of the speech recognition part of the WSA is the Google implementation (vendor prefix 'webkit'), we need to declare these variables here. 
+ * Otherwise, Angular will not recognize them, because webkitSpeechRecognition is not a library. 
+ */
 declare var webkitSpeechRecognition: any;
 declare var webkitSpeechGrammarList: any;
 
 /**
  * This service handles the speech recognition. 
  * 
- * Note: As of now, grammars are not working correctly using the Web Speech API. The spech recognition does not check wheteher the grammar can be applied to the spoken
- * words or not. The spech recognition always returns an result. There, this service can only return what was said (transcripts). 
+ * Note: As of now, the the Google implementation of the speech recognition part of the WSA is the only available implementation. Testing and searching on the web revealed, that grammars are not working correctly at the moment
+ * using the Google implementation. When using a grammar, the speech recognition always returns a match, not checking whether the spoken words match the defined grammar rules or not. 
  * 
- * It cannot check spoken words against some grammars/ grammar rules. 
+ * This means, the only thing the developer can do is to get the results of the speech recognition (transcripts) and do string comparisons. 
  */
 @Injectable({
   providedIn: 'root'
@@ -24,7 +25,7 @@ declare var webkitSpeechGrammarList: any;
 export class SpeechRecognitionService {
 
   /**
-   * The instance that controls the recognition of grammars. 
+   * The instance that controls the speech recognition. 
    *
    */
   private speechRecognition!: SpeechRecognition;
@@ -53,7 +54,8 @@ export class SpeechRecognitionService {
       speechRecognitionSupported = true;
 
     } 
-    // if not vendor independent version could be found, we gonna use the google implementation, which is currently the only one implementing the speech recognition properly
+    // if no vendor independent version could be found, we gonna use the google implementation, which is currently the only one implementing the speech recognition properly
+    // see https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API for more info or https://caniuse.com/?search=web%20speech%20api
     else if ('webkitSpeechRecognition' in window) {
 
       this.speechRecognition = new webkitSpeechRecognition();
@@ -87,11 +89,15 @@ export class SpeechRecognitionService {
     }
     else {
 
+      // return false in case we have no support for speech recognition in the browser of the user
       return false;
 
     }
   }
 
+  /**
+   * Tells the browser to listen for user input using a microphone and start the recognition.
+   */
   public startRecognition(): void {
 
     // we can only start a recognition if the recognition was initialized and is available in the browser
@@ -99,27 +105,37 @@ export class SpeechRecognitionService {
       return;
     }
 
-    console.log("starting speech recognition");
     this.speechRecognition.start();
+    console.log("Started the speech recognition");
 
   }
 
+  /**
+   * Tells the browser to stop listening for user input using a microphone and stops the recognition.
+   */
   public stopRecognition(): void {
 
-    console.log("stopping speech recognition");
     this.speechRecognition.stop();
+    console.log("Stopped the speech recognition");
 
   }
 
+  /**
+   * Returns an Observable that can be subscribed to. The observable returns a value when the speech recognition got a result ready for usage. 
+   * 
+   * @returns the Observable to subscribe to
+   */
   public onSpeechRecognitionResultAvailable(): Observable<WebSpeechRecognitionMessage> {
 
     return new Observable((subscriber) => {
 
+      // the observable shall emit values when the speech recognition got results ready
       this.speechRecognition.addEventListener("result",(resultEvent) => {
 
+        // get the first alternative of the first result
         let transcript: string = resultEvent.results[0][0].transcript;
 
-        console.log(transcript);
+        console.log("Speech recognition catched '" + transcript + "'");
 
         // create the message
         let message: WebSpeechRecognitionMessage = {
@@ -134,14 +150,19 @@ export class SpeechRecognitionService {
 
   }
 
+  /**
+   * Returns an Observable that can be subscribed to. The observable returns a value when the speech recognition has started the recognition. 
+   * 
+   * @returns the Observable to subscribe to
+   */
   public onSpeechRecognitionStarted(): Observable<WebSpeechRecognitionMessage> {
 
     return new Observable((subscriber) => {
 
+      // the observable shall emit values when the speech recognition started the recognition
       this.speechRecognition.addEventListener("start",(startEvent) => {
         
         let message: WebSpeechRecognitionMessage = {
-
           messageType: WebSpeechRecognitionMessageType.START,
           data: null
         };
@@ -152,14 +173,19 @@ export class SpeechRecognitionService {
     })
   }
 
+  /**
+   * Returns an Observable that can be subscribed to. The observable returns a value when the speech recognition has ended the recognition. 
+   * 
+   * @returns the Observable to subscribe to
+   */
   public onSpeechRecognitionEnded(): Observable<WebSpeechRecognitionMessage> {
 
     return new Observable((subscriber) => {
 
+      // the observable shall emit values when the speech recognition stopped the recognition
       this.speechRecognition.addEventListener("end",(endEvent) => {
         
         let message: WebSpeechRecognitionMessage = {
-
           messageType: WebSpeechRecognitionMessageType.END,
           data: null
         };
@@ -170,10 +196,16 @@ export class SpeechRecognitionService {
     })
   }
 
+  /**
+   * Returns an Observable that can be subscribed to. The observable returns a value when an error occured during the running speech recognition.
+   * 
+   * @returns the Observable to subscribe to
+   */
   public onSpeechRecognitionError(): Observable<WebSpeechRecognitionMessage> {
 
     return new Observable((subscriber) => {
 
+      // the observable shall emit values when an error occured during the speech recognition
       this.speechRecognition.addEventListener("error",(errorEvent) => {
 
         let customErrorMessage = "";
@@ -181,23 +213,24 @@ export class SpeechRecognitionService {
         // see https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognitionErrorEvent/error for reference
         // error.message doesn't seem to be implemented yet, so we gonna do this ourselves
         
+        // get the identifier of the error that was created by the speech recognition
         let errorIdentifier = errorEvent.error;
 
+        // create a client friendly error message based on the given error identifier that we can show to the user
         switch (errorIdentifier) {
 
           case "no-speech": {
-
             customErrorMessage = "Entschuldigung, wir konnten Sie nicht hören!";
             break;
           }
 
           case "aborted":  {
-            customErrorMessage = "Die Spracheingabe wurde abgebrochen";
+            customErrorMessage = "Die Spracheingabe wurde abgebrochen.";
             break;
           }
 
           case "audio-capture": {
-            customErrorMessage = "Es konnte kein angeschlossenes Mikrofon erkannt werden";
+            customErrorMessage = "Es konnte kein angeschlossenes Mikrofon erkannt werden.";
             break;
           }
 
@@ -222,7 +255,7 @@ export class SpeechRecognitionService {
           }
 
           case "language-not-supported": {
-            customErrorMessage = "Diese Sprache wird leider nicht unterstützt.";
+            customErrorMessage = "Ihre verwendete Sprache wird leider nicht unterstützt.";
             break;
           }
 
@@ -241,13 +274,13 @@ export class SpeechRecognitionService {
         };
 
         subscriber.next(message);
-
+        
       });
     })
   }
 
   /**
-   * Adds a grammar to the speech recognition. Note that grammars are not supported by the Google implementation of the Web Speech API. This may change in the future. 
+   * Adds a grammar to the speech recognition. Note, that grammars are not supported by the Google implementation of the Web Speech API yet. This may change in the future. 
    * 
    * Rules that shall be added must be in the JSGF format. For example, a rule that look's for the terms 'New element' in an utterance of a human being should look like this:
    * 
@@ -283,7 +316,6 @@ export class SpeechRecognitionService {
     grammar = grammarVersion + grammarName + concatedGrammarRules;
 
     this.speechGrammarList.addFromString(grammar,grammarWeight);
-
   }
 
 }

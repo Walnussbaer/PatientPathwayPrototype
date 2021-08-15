@@ -2,8 +2,8 @@ import { WebSpeechRecognitionMessageType } from "./WebSpeechRecognitionMessageTy
 
 
 /**
- * This type defines the messages that get created on certain Web Speech API speech recognition events 
- * and can be used by the application to further process the speech recognition. 
+ * This type defines the messages that get created on certain Web Speech API speech recognition events and can be used by the application to further process the speech recognition.
+ *  
  */
 export interface WebSpeechRecognitionMessage {
 
