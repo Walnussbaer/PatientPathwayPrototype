@@ -69,6 +69,20 @@ export class PathwayControlComponent implements OnInit {
   }
 
   /**
+   * Gets called when the user wants an explanation of the pathway controls. 
+   */
+     public explainPathwayControls(): void {
+
+      let utteranceToSpeak = ("".concat(
+      "Das ist ihr persönlicher Patientenpfad.",
+      'Folgende Sprachbefehle stehen zur Verfügung:',
+      "Neuer Termin: Ermöglicht das Anlegen eines neuen Termins.",
+      "Hilfe: Öffnet ein Fenster mit einer Übersicht über die Sprachbefehle."));
+
+      this.speechSynthesisService.speakUtterance(utteranceToSpeak);
+
+    }
+  /**
    * Gets called when the user pressed the microphone button. 
    */
   public onActivateVoiceControl(): void {
@@ -85,36 +99,6 @@ export class PathwayControlComponent implements OnInit {
 
     this.speechRecognitionService.stopRecognition();
     this.pathIsListening = false;
-
-  }
-
-  /**
-   * Gets called when the speech recognition recognized that the user wants to create a new pathway event. 
-   */
-  public openAndHandlePathwayAppointmentCreatorDialog(): void {
-
-    const pathwayAppointmentCreatorDialog = this.dialog.open(
-      PathwayAppointmentCreatorComponent,
-      {
-        //width: "80%",
-        //height: "50%",
-      }
-    );
-
-    // define what shall happen after the pathway event creator component dialog is closed
-    pathwayAppointmentCreatorDialog.afterClosed().subscribe(result => {
-
-      if (result) {
-
-        this.pathwayEventEmitter.emit(result as PathwayEvent);
-
-      }
-
-      // reset the speech recognition service and renew subscriptions
-      this.unsubscribeFromAllSubscriptions();
-      this.speechRecognitionService.initRecognition();
-      this.setupSpeechRecognitionBehaviour();
-    });
 
   }
 
@@ -240,18 +224,32 @@ export class PathwayControlComponent implements OnInit {
   }
 
   /**
-   * Gets called when the user wants an explanation of the pathway controls. 
+   * Gets called when the speech recognition recognized that the user wants to create a new pathway event. 
    */
-  public explainPathwayControls(): void {
+     private openAndHandlePathwayAppointmentCreatorDialog(): void {
 
-    this.speechSynthesisService.speakUtterance("Das ist ihr persönlicher Patientenpfad");
-
-    this.speechSynthesisService.speakUtterance("Folgende Sprachbefehle stehen zur Verfügung");
-
-    this.speechSynthesisService.speakUtterance("Neuer Termin: Ermöglicht das Anlegen eines neuen Termins");
-
-    this.speechSynthesisService.speakUtterance("Hilfe: Öffnet ein Fenster mit einer Übersicht über die Sprachbefehle"); 
-
-  }
-
+      const pathwayAppointmentCreatorDialog = this.dialog.open(
+        PathwayAppointmentCreatorComponent,
+        {
+          //width: "80%",
+          //height: "50%",
+        }
+      );
+  
+      // define what shall happen after the pathway event creator component dialog is closed
+      pathwayAppointmentCreatorDialog.afterClosed().subscribe(result => {
+  
+        if (result) {
+  
+          this.pathwayEventEmitter.emit(result as PathwayEvent);
+  
+        }
+  
+        // reset the speech recognition service and renew subscriptions
+        this.unsubscribeFromAllSubscriptions();
+        this.speechRecognitionService.initRecognition();
+        this.setupSpeechRecognitionBehaviour();
+      });
+  
+    }
 }

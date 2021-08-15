@@ -135,16 +135,19 @@ export class SpeechRecognitionService {
         // get the first alternative of the first result
         let transcript: string = resultEvent.results[0][0].transcript;
 
-        console.log("Speech recognition catched '" + transcript + "'");
+        // check if the result is final
+        if (resultEvent.results[0].isFinal){
 
-        // create the message
-        let message: WebSpeechRecognitionMessage = {
-          messageType: WebSpeechRecognitionMessageType.RESULT_AVAILABLE,
-          data: transcript,
+          console.log("Speech recognition catched '" + transcript + "'");
+
+          // create the message
+          let message: WebSpeechRecognitionMessage = {
+            messageType: WebSpeechRecognitionMessageType.RESULT_AVAILABLE,
+            data: transcript,
+          }
+  
+          subscriber.next(message);
         }
-
-        subscriber.next(message);
-
     })
     })
 
