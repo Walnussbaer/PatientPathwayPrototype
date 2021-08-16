@@ -261,22 +261,32 @@ export class PathwayControlComponent implements OnInit {
 
         // it might happen that the user canceled the creation process before any data or error message is available
         if (result!){
+
+          let synthesizerSubscription = this.speechSynthesisService.onSpeechEnd().subscribe({
+            next: (result) => {
+              synthesizerSubscription.unsubscribe();
+              this.restartSpeechRecognition();
+              return;
+            }
+          });
+
           if (this.isPathwayEvent(result)) {
   
-            this.speechSynthesisService.speakUtterance("Sie haben erfolgreich einen neuen Termin angelegt.");
             this.pathwayEventEmitter.emit(result as PathwayEvent);
-            
+            this.speechSynthesisService.speakUtterance("Sie haben erfolgreich einen neuen Termin angelegt.");    
     
           } else {
-            result = <WebSpeechSynthesisMessage> result;
-            // otherwise we got an error message 
-            this.displayErrorMessage(result.data);
-          }
-        }
 
-        
+            result = <WebSpeechSynthesisMessage> result;
+            let errorMessage = result.data;
+            // otherwise we got an error message 
+            this.displayErrorMessage(errorMessage);
+            this.speechSynthesisService.speakUtterance(errorMessage);
+          }
+        } else {
         // restart to listen for voice commands
         this.restartSpeechRecognition();
+        }
       });
   
     }
