@@ -263,7 +263,9 @@ export class PathwayControlComponent implements OnInit {
         if (result!){
           if (this.isPathwayEvent(result)) {
   
+            this.speechSynthesisService.speakUtterance("Sie haben erfolgreich einen neuen Termin angelegt.");
             this.pathwayEventEmitter.emit(result as PathwayEvent);
+            
     
           } else {
             result = <WebSpeechSynthesisMessage> result;
@@ -272,6 +274,7 @@ export class PathwayControlComponent implements OnInit {
           }
         }
 
+        
         // restart to listen for voice commands
         this.restartSpeechRecognition();
       });
