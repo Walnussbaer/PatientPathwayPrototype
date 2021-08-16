@@ -79,7 +79,7 @@
 
                 <button *ngIf="!recordingFormInput && !speaking" (click)="getContentInput()" mat-raised-button color="accent">Neue Eingabe</button>
         
-                <button *ngIf="isLastVoiceInputValid && !recordingFormInput" (click)="saveAppointment()" mat-raised-button color="primary">Fertig</button>
+                <button *ngIf="isLastVoiceInputValid && !recordingFormInput" (click)="closeDialogWithResult()" mat-raised-button color="primary">Fertig</button>
                   
             </div>
     

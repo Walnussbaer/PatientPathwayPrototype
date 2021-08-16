@@ -10,6 +10,7 @@ import { MatDialogRef } from '@angular/material/dialog';
 import { SpeechSynthesisService } from 'src/app/shared/services/speech/speech-synthesis.service';
 import { faMicrophone, IconDefinition } from '@fortawesome/free-solid-svg-icons';
 import { WebSpeechSynthesisMessage } from 'src/app/shared/services/speech/WebSpeechSynthesisMessage';
+import { faThemeisle } from '@fortawesome/free-brands-svg-icons';
 
 @Component({
   selector: 'app-pathway-appointment-creator',
@@ -69,7 +70,23 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
 
     this.speechSynthesisService.initSynthesis();
 
-    // define error handling for speech synthesis
+    // define what shall happen when the synthesizer started speaking
+    this.speechSynthesisService.onSpeechStart().subscribe({
+      next: (result => {
+        console.log("synthesizer started speaking")
+        this.speaking = true;
+      })
+    });
+
+    // define what shall happen when the synthesizer stopped speaking
+    this.speechSynthesisService.onSpeechEnd().subscribe({
+      next: (result => {
+        console.log("synthesizer stopped speaking");
+        this.speaking = false;
+      })
+    });
+
+    // define error handling for speech synthesizer
     this.speechSynthesisService.onErrorEvent().subscribe({
       next: (result: WebSpeechSynthesisMessage) => {
 
@@ -79,21 +96,12 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
         this.clearCommandInputSubscriptions();
         this.clearFormInputSubscriptions();
         
-        this.matSnackbarService.open(errorMessage,"Okay",{
-          panelClass: "warning-mat-snackbar",
-        });
+        this.displayErrorMessage(errorMessage);
 
         this.closeDialogWithoutResult();
       }
     });
-
-    // this handler also does not need to be removed
-    this.speechSynthesisService.onSpeechStart().subscribe({
-      next: (result => {
-        this.speaking = true;
-      })
-    });
-     
+    // start the creation of creating a new appointment
     this.startCreationProcess();
   
   }
@@ -108,6 +116,20 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
   }
 
   /**
+   * Construct the new appointment, pass it to the parent component and close the dialog.
+   */
+     public closeDialogWithResult(): void {
+
+      this.newPathwayEvent = {
+        date: this.appointmentDate,
+        header: this.appointmentCaption,
+        content: this.appointmentContent
+      }
+  
+      this.dialogRef.close(this.newPathwayEvent);
+    }
+
+  /**
    * Starts the ping pong between speech synthesizer and user. 
    */
   public startCreationProcess() {
@@ -117,12 +139,13 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
 
     this.speechRecognitionService.initRecognition();
 
-    this.speechSynthesisService.onSpeechEnd().subscribe({
-      complete: () => {
+    // we want to start the recognition after the question was asked by the synthesizer
+    let synthesizerSubscription = this.speechSynthesisService.onSpeechEnd().subscribe({
+      next: () => {
 
-        this.speaking = false;
         this.userCanStartCreationProcess = true;
-        this.listenForNextControlInput(this.getDateInput);
+        synthesizerSubscription.unsubscribe(); //clean up
+        this.listenForNextControlInput(this.getDateInput)
       }
     });
 
@@ -136,16 +159,13 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
   public getDateInput(): void {
 
     this.isLastVoiceInputValid = false;
-
     this.currentStepInAppointmentCreation = 1;
 
-    this.speechSynthesisService.onSpeechEnd().subscribe({
-      complete: () => {
+    // we want to start the recognition after the question was asked by the synthesizer
+    let synthesizerSubscription = this.speechSynthesisService.onSpeechEnd().subscribe({
+      next: () => {
 
-        this.speaking = false;
-        console.log("Utterance finished!");
-
-        // we want to start the recognition after the question was asked by the synthesizer
+        synthesizerSubscription.unsubscribe(); // clean up
         this.listenForNextFormInput();
       }
     });
@@ -154,30 +174,28 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
       next: (message: WebSpeechRecognitionMessage) => {
 
         this.speechRecognitionService.stopRecognition();
-      
-        let dateValue: Date;
+        let dateValue: Date = new Date(message.data);
 
-        dateValue = new Date(message.data);
-
+        // if the date is not valid, we need to reask the user
         if (dateValue.toString() == "Invalid Date") {
 
+          let errorMessage: string = "Das ist kein echtes Datum";
           this.isLastVoiceInputValid = false;
 
-          this.matSnackbarService.open("Das ist kein valides Datum!",undefined,{
-            duration:3000,
-            panelClass: "warning-mat-snackbar"
-          });
+          this.displayErrorMessage(errorMessage);
 
           // we need to make a new subscription, because the observable from the first subscription completes
-          this.speechSynthesisService.onSpeechEnd().subscribe({
-            complete: () => {
-              this.speaking = false;
+          let synthesizerSubscription = this.speechSynthesisService.onSpeechEnd().subscribe({
+            next: () => {
+
+              synthesizerSubscription.unsubscribe();
               this.listenForNextFormInput();
             }
           });
 
-          this.speechSynthesisService.speakUtterance("Das ist kein echtes Datum!");
+          this.speechSynthesisService.speakUtterance(errorMessage);
 
+        // if the date IS valid, we can continue with the next creation step
         } else {
 
           this.appointmentDate = dateValue;
@@ -186,6 +204,8 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
         }
       }
     })); 
+
+    // ask for the date of the new appointment
     this.speechSynthesisService.speakUtterance(this.dateQuestion);
   }
 
@@ -195,16 +215,13 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
   public getHeaderInput(): void {
 
     this.isLastVoiceInputValid = false;
-
     this.currentStepInAppointmentCreation = 2;
 
-    this.speechSynthesisService.onSpeechEnd().subscribe({
+    // we want to start the recognition after the question was asked by the synthesizer
+    let synthesizerSubscription = this.speechSynthesisService.onSpeechEnd().subscribe({
       next: (result) => {
-
-        this.speaking = false;
-        console.log("Utterance finished!");
-
-        // we want to start the recognition after the question was asked by the synthesizer
+ 
+        synthesizerSubscription.unsubscribe(); // clean up
         this.listenForNextFormInput();
       }
     });
@@ -215,17 +232,15 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
 
         this.speechRecognitionService.stopRecognition();
 
-        let captionValue: string;
-
-        captionValue = message.data;
-
-        this.appointmentCaption = captionValue;
+        this.appointmentCaption = message.data as string;
         this.isLastVoiceInputValid = true;
 
         this.listenForNextControlInput(this.getContentInput,this.getDateInput,this.getHeaderInput);
 
       }
     }));
+
+    // ask for the caption of the new appointment
     this.speechSynthesisService.speakUtterance(this.captionQuestion);
   }
 
@@ -235,15 +250,13 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
   public getContentInput(): void {
 
     this.isLastVoiceInputValid = false;
-
     this.currentStepInAppointmentCreation = 3;
 
-    this.speechSynthesisService.onSpeechEnd().subscribe({
+    let synthesizerSubscription = this.speechSynthesisService.onSpeechEnd().subscribe({
       next: (result) => {
 
-        this.speaking = false;
-        console.log("Utterance finished!");
         // we want to start the recognition after the question was asked by the synthesizer
+        synthesizerSubscription.unsubscribe();
         this.listenForNextFormInput();
       }
     });
@@ -254,14 +267,10 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
 
         this.speechRecognitionService.stopRecognition();
 
-        let contentValue: string;
-
-        contentValue = message.data;
-
-        this.appointmentContent = contentValue;
+        this.appointmentContent = message.data;
         this.isLastVoiceInputValid = true;
 
-        this.listenForNextControlInput(this.saveAppointment,this.getHeaderInput,this.getContentInput);
+        this.listenForNextControlInput(this.closeDialogWithResult,this.getHeaderInput,this.getContentInput);
 
       }
     }));
@@ -270,25 +279,11 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
   }
 
   /**
-   * Construct the new appointment, pass it to the parent component and close the dialog.
-   */
-  public saveAppointment(): void {
-
-    this.newPathwayEvent = {
-      date: this.appointmentDate,
-      header: this.appointmentCaption,
-      content: this.appointmentContent
-    }
-
-    this.dialogRef.close(this.newPathwayEvent);
-  }
-
-  /**
    * Start the recognition and listen for next form input. 
    */
   private listenForNextFormInput(): void {
 
-    this.speechRecognitionService.stopRecognition()
+    this.speechRecognitionService.stopRecognition();
 
     this.setupFormInputBehaviour();
     this.speechRecognitionService.startRecognition();
@@ -325,19 +320,19 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
     this.currentControlSubscriptions.push(this.speechRecognitionService.onSpeechRecognitionResultAvailable().subscribe({
       next: (result: WebSpeechRecognitionMessage) => {
 
+        // we don't want to listen for commands anymore
+        this.clearCommandInputSubscriptions();
+
         this.speechRecognitionService.stopRecognition();
         this.controlIndicatorIconClass = "not-waiting-for-command";
         this.listeningForControlCommmand = false;
         
         let recognitionResult: string = (result.data as string).toLowerCase();
-        
-        this.clearCommandInputSubscriptions();
 
         // cancel the creation should always be possible
         if (recognitionResult == "dialog schließen") {
 
           console.log("closing appointment creation dialog");
-          this.speechRecognitionService.stopRecognition();
           this.closeDialogWithoutResult();
         }
 
@@ -368,7 +363,6 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
 
         else if (recognitionResult == "fertig" && this.currentStepInAppointmentCreation == 3){
 
-          //this.clearFormInputSubscriptions();
           console.log("finishing proccess")
           nextStep.call(this);
         }
@@ -376,10 +370,8 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
         else {
 
           console.log("user used incorrect command");
-          this.matSnackbarService.open("'" + recognitionResult + "' ist kein valides Kommando!","Okay",{
-            duration: 3000,
-            panelClass: "warning-mat-snackbar"
-          });
+
+          this.displayErrorMessage("'" + recognitionResult + "' ist kein valides Kommando");
 
           this.listenForNextControlInput(nextStep,previousStep,currentStep);
           this.controlIndicatorIconClass = "waiting-for-command"
@@ -399,7 +391,7 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
     this.currentControlSubscriptions.push(this.speechRecognitionService.onSpeechRecognitionEnded().subscribe({
       next: (result: WebSpeechRecognitionMessage) => {
         
-        this.listenForNextControlInput(nextStep);
+        this.listenForNextControlInput(nextStep,previousStep,currentStep);
         this.controlIndicatorIconClass = "waiting-for-command";
         this.listeningForControlCommmand = true;
 
@@ -409,7 +401,7 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
     this.currentControlSubscriptions.push(this.speechRecognitionService.onSpeechRecognitionError().subscribe({
       next: (result: WebSpeechRecognitionMessage) => {
         
-        this.listenForNextControlInput(nextStep);
+        this.listenForNextControlInput(nextStep,previousStep,currentStep);
         this.controlIndicatorIconClass = "waiting-for-command";
         this.listeningForControlCommmand = true;
 
@@ -434,6 +426,7 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
     this.currentFormSubscriptions.push(this.speechRecognitionService.onSpeechRecognitionEnded().subscribe({
       next: (message: WebSpeechRecognitionMessage) => {
 
+        this.clearFormInputSubscriptions();
         this.recordingFormInput = false;
         this.creatorContentClass = "is-not-recording";
         
@@ -444,15 +437,12 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
     this.currentFormSubscriptions.push(this.speechRecognitionService.onSpeechRecognitionError().subscribe({
       next: (message: WebSpeechRecognitionMessage) => {
 
-        this.matSnackbarService.open(message.data,undefined,{
-          duration: 3500
-        })
+        this.displayErrorMessage(message.data);
 
         this.clearFormInputSubscriptions();
         this.isLastVoiceInputValid = false;
         this.recordingFormInput = false;
         this.creatorContentClass = "is-not-recording";
-    
       }
     }));
   }
@@ -462,7 +452,7 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
    */
      private clearFormInputSubscriptions(): void {
 
-      this.currentFormSubscriptions?.forEach(subscription => {
+      this.currentFormSubscriptions.forEach(subscription => {
         subscription.unsubscribe();
       })
     }
@@ -474,6 +464,19 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
   
       this.currentControlSubscriptions.forEach(subscription => {
         subscription.unsubscribe();
+      })
+    }
+
+    /**
+     * Convenience method for displaying error messages using the Angular Material Design Snackbar. 
+     * 
+     * @param errorMessage the error message to display
+     */
+    private displayErrorMessage(errorMessage: string): void {
+
+      this.matSnackbarService.open(errorMessage,"Okay",{
+        panelClass: "warning-mat-snackbar",
+        duration: 4000,
       })
     }
 }

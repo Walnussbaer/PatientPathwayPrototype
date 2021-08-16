@@ -72,7 +72,6 @@ export class SpeechSynthesisService {
         }
 
         subscriber.next(message);
-        subscriber.complete();
 
       })
 
