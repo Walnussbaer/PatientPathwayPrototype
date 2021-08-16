@@ -272,6 +272,7 @@ export class PathwayControlComponent implements OnInit {
           }
         }
 
+        // restart to listen for voice commands
         this.restartSpeechRecognition();
       });
   

@@ -140,7 +140,7 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
     this.currentStepInAppointmentCreation = 1;
 
     this.speechSynthesisService.onSpeechEnd().subscribe({
-      next: (result) => {
+      complete: () => {
 
         this.speaking = false;
         console.log("Utterance finished!");
@@ -163,9 +163,20 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
 
           this.isLastVoiceInputValid = false;
 
-          this.matSnackbarService.open("Das ist kein valides Datum",undefined,{
-            duration:3000
+          this.matSnackbarService.open("Das ist kein valides Datum!",undefined,{
+            duration:3000,
+            panelClass: "warning-mat-snackbar"
           });
+
+          // we need to make a new subscription, because the observable from the first subscription completes
+          this.speechSynthesisService.onSpeechEnd().subscribe({
+            complete: () => {
+              this.speaking = false;
+              this.listenForNextFormInput();
+            }
+          });
+
+          this.speechSynthesisService.speakUtterance("Das ist kein echtes Datum!");
 
         } else {
 
@@ -363,8 +374,14 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
         }
         // if command was not on the previous options, then we gonna ask for a new command
         else {
+
           console.log("user used incorrect command");
-          this.listenForNextControlInput(nextStep);
+          this.matSnackbarService.open("'" + recognitionResult + "' ist kein valides Kommando!","Okay",{
+            duration: 3000,
+            panelClass: "warning-mat-snackbar"
+          });
+
+          this.listenForNextControlInput(nextStep,previousStep,currentStep);
           this.controlIndicatorIconClass = "waiting-for-command"
           this.listeningForControlCommmand = true;
         }
@@ -417,7 +434,6 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
     this.currentFormSubscriptions.push(this.speechRecognitionService.onSpeechRecognitionEnded().subscribe({
       next: (message: WebSpeechRecognitionMessage) => {
 
-        this.clearFormInputSubscriptions();
         this.recordingFormInput = false;
         this.creatorContentClass = "is-not-recording";
         
@@ -436,22 +452,9 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
         this.isLastVoiceInputValid = false;
         this.recordingFormInput = false;
         this.creatorContentClass = "is-not-recording";
-        
-
+    
       }
     }));
-
-    /*
-    this.currentFormSubscriptions.push(this.speechSynthesisService.onSpeechStart().subscribe({
-
-      next: (result) => {
-
-        this.speaking = true;
-
-      }
-      
-
-    })); */
   }
   
   /**
