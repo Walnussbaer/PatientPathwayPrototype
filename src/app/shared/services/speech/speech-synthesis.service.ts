@@ -87,55 +87,62 @@ export class SpeechSynthesisService {
         let customErrorMessage: string = "";
         let errorIdentifier: string = errorEvent.error;
 
-        // see https://developer.mozilla.org/en-US/docs/Web/API/SpeechSynthesisErrorEvent/error for reference
+        // see https://wicg.github.io/speech-api/#speechsynthesiserrorevent-attributes for reference
 
         switch(errorIdentifier) {
 
           case "canceled": {
-            customErrorMessage = "Die Sprachsynthetisierung konnte nicht gestartet werden."
+            customErrorMessage = "Die Sprachsynthetisierung konnte nicht gestartet werden.";
             break;
           }
           case "interrupted": {
-            customErrorMessage = "Die Sprachsynthetisierung wurde unterbrochen."
+            customErrorMessage = "Die Sprachsynthetisierung wurde unterbrochen.";
             break;
           }
           case "audio-busy": {
-            customErrorMessage = "Die Sprachsynthetisierung konnte nicht gestartet werden, da das Audioausgabegerät beschäftigt ist."
+            customErrorMessage = "Die Sprachsynthetisierung konnte nicht gestartet werden, da das Audioausgabegerät beschäftigt ist.";
             break;
           }
           case "audio-hardware": {
-            customErrorMessage = "Bitte schließen Sie ein entsprechendes Audiogerät an, um die Sprachsynthetisierung nutzen zu können."
+            customErrorMessage = "Bitte schließen Sie ein entsprechendes Audiogerät an, um die Sprachsynthetisierung nutzen zu können.";
             break;
           }
           case "network": {
-            customErrorMessage = "Ein Netzwerkfehler ist bei der Sprachsynthetisierung aufgetreten."
+            customErrorMessage = "Ein Netzwerkfehler ist bei der Sprachsynthetisierung aufgetreten.";
             break;
           }
           case "synthesis-unavailable": {
-            customErrorMessage = "Für die Sprachausgabe konnte keine Sprachsynthetisierung durchgeführt werden."
+            customErrorMessage = "Für die Sprachausgabe konnte keine Sprachsynthetisierung durchgeführt werden.";
             break;
           }
           case "synthesis-failed": {
-            customErrorMessage = "Während der Sprachsynthetisierung ist ein Fehler aufgetreten."
+            customErrorMessage = "Während der Sprachsynthetisierung ist ein Fehler aufgetreten.";
             break;
           }
           case "language-unavailable": {
-            customErrorMessage = "Die gewählte Sprache steht für die Sprachsynthetisierung nicht zur Verfügung."
+            customErrorMessage = "Die gewählte Sprache steht für die Sprachsynthetisierung nicht zur Verfügung.";
             break;
           }
           case "voice-unavailable": {
-            customErrorMessage = "Die gewählte Stimme steht für die Sprachsynthetisierung nicht zur Verfügung."
+            customErrorMessage = "Die gewählte Stimme steht für die Sprachsynthetisierung nicht zur Verfügung.";
             break;
           }
           case "text-too-long": {
-            customErrorMessage = "Der Text ist zu lang für eine Sprachsynthetisierung."
+            customErrorMessage = "Der Text ist zu lang für eine Sprachsynthetisierung.";
             break;
           }
           case "invalid-argument": {
-            customErrorMessage = "Die Sprachsynthetisierung konnte nicht durchgeführt werden, da die konfigurierte Sprachgeschwindigkeit, -tonlage oder die -lautstärke invalide Werte enthalten."
+            customErrorMessage = "Die Sprachsynthetisierung konnte nicht durchgeführt werden, da die konfigurierte Sprachgeschwindigkeit, -tonlage oder die -lautstärke invalide Werte enthalten.";
             break;
           }
+          case "not-allowed": {
+            customErrorMessage = "Ihr System oder Browser hat den Start der Sprachsynthetisierung verboten. Bitte versuchen Sie es noch einmal.";
+            break;
+          }
+
+          // this should not happen under normal circumstances
           default: {
+            customErrorMessage = "Ein Fehler, der nicht dem Standard der Web Speech API entspricht, ist bei der Sprachsynthetisierung aufgetreten."
             break;
           }
 

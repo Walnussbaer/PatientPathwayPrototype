@@ -10,7 +10,7 @@
 
     <div id="creatorContent" [className]="creatorContentClass">
 
-        <h3>{{welcomeUtterance}}</h3>
+        <h3 id="welcomeText" *ngIf="currentStepInAppointmentCreation==0" >{{welcomeUtterance}}</h3>
 
         <button *ngIf="currentStepInAppointmentCreation==0 && userCanStartCreationProcess" mat-raised-button (click)="getDateInput()">Start</button>
     
@@ -18,13 +18,17 @@
     
             <p id="dateQuestion">{{dateQuestion}}</p>
     
-            <p *ngIf="istLastVoiceInputValid">{{appointmentDate | date}}</p>
+            <p *ngIf="isLastVoiceInputValid">{{appointmentDate | date}}</p>
     
             <div class="creator-button-div">
 
+                <button *ngIf="!recordingFormInput && !speaking" (click)="closeDialogWithoutResult()" mat-raised-button color="accent">Dialog schließen</button>
+
+                <button *ngIf="!recordingFormInput && !speaking" (click)="getDateInput()" mat-raised-button color="accent">Zurück</button>
+
                 <button *ngIf="!recordingFormInput && !speaking" (click)="getDateInput()" mat-raised-button color="accent">Neue Eingabe</button>
     
-                <button *ngIf="istLastVoiceInputValid && !recordingFormInput" (click)="getHeaderInput()" mat-raised-button color="primary">Weiter</button>
+                <button *ngIf="isLastVoiceInputValid && !recordingFormInput" (click)="getHeaderInput()" mat-raised-button color="primary">Weiter</button>
 
             </div>
 
@@ -39,11 +43,13 @@
 
             <div class="creator-button-div">
 
+                <button *ngIf="!recordingFormInput && !speaking" (click)="closeDialogWithoutResult()" mat-raised-button color="accent">Dialog schließen</button>
+
                 <button *ngIf="!recordingFormInput && !speaking" (click)="getDateInput()" mat-raised-button color="accent">Zurück</button>
 
                 <button *ngIf="!recordingFormInput && !speaking" (click)="getHeaderInput()" mat-raised-button color="accent">Neue Eingabe</button>
         
-                <button *ngIf="istLastVoiceInputValid && !recordingFormInput" (click)="getContentInput()" mat-raised-button color="primary">Weiter</button>
+                <button *ngIf="isLastVoiceInputValid && !recordingFormInput" (click)="getContentInput()" mat-raised-button color="primary">Weiter</button>
                   
             </div>
 
@@ -57,11 +63,13 @@
         
             <div class="creator-button-div">
 
+                <button *ngIf="!recordingFormInput && !speaking" (click)="closeDialogWithoutResult()" mat-raised-button color="accent">Dialog schließen</button>
+
                 <button *ngIf="!recordingFormInput && !speaking" (click)="getHeaderInput()" mat-raised-button color="accent">Zurück</button>
 
                 <button *ngIf="!recordingFormInput && !speaking" (click)="getContentInput()" mat-raised-button color="accent">Neue Eingabe</button>
         
-                <button *ngIf="istLastVoiceInputValid && !recordingFormInput" (click)="saveAppointment()" mat-raised-button color="primary">Fertig</button>
+                <button *ngIf="isLastVoiceInputValid && !recordingFormInput" (click)="saveAppointment()" mat-raised-button color="primary">Fertig</button>
                   
             </div>
     

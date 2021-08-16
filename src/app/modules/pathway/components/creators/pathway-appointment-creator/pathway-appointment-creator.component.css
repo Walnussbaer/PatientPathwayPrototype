@@ -80,6 +80,11 @@
     display: flex; 
     gap: 10px;
 
+    align-items: center;
+    justify-content: center;
+
+    flex-wrap: wrap;
+
 }
 
 #voiceControlIndicatorIcon {
@@ -115,4 +120,12 @@
 
     to {color: white;}
 
+}
+
+#welcomeText{
+    text-align: center;
+}
+
+p {
+    text-align: center;
 }

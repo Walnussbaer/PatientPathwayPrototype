@@ -276,9 +276,9 @@ export class SpeechRecognitionService {
             break;
           }
 
-          // this should not happen under normale circumstances
+          // this should not happen under normal circumstances
           default: {
-            customErrorMessage = "Ein Fehler, der nicht dem Standard der Web Speech API entspricht, ist aufgetreten."
+            customErrorMessage = "Ein Fehler, der nicht dem Standard der Web Speech API entspricht, ist bei der Spracherkennung aufgetreten."
             break;
           }
 

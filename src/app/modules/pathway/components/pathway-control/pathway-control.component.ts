@@ -6,6 +6,7 @@ import { Subscription } from 'rxjs';
 import { SpeechRecognitionService } from 'src/app/shared/services/speech/speech-recognition.service';
 import { SpeechSynthesisService } from 'src/app/shared/services/speech/speech-synthesis.service';
 import { WebSpeechRecognitionMessage } from 'src/app/shared/services/speech/WebSpeechRecognitionMessage';
+import { WebSpeechSynthesisMessage } from 'src/app/shared/services/speech/WebSpeechSynthesisMessage';
 import { PathwayEvent } from '../../model/PathwayEvent';
 import { PathwayAppointmentCreatorComponent } from '../creators/pathway-appointment-creator/pathway-appointment-creator.component';
 import { PathwayControlHelpDialogComponent } from '../pathway-control-help-dialog/pathway-control-help-dialog.component';
@@ -256,14 +257,21 @@ export class PathwayControlComponent implements OnInit {
       );
   
       // define what shall happen after the pathway event creator component dialog is closed
-      pathwayAppointmentCreatorDialog.afterClosed().subscribe(result => {
+      pathwayAppointmentCreatorDialog.afterClosed().subscribe((result: PathwayEvent | WebSpeechSynthesisMessage) => {
+
+        // it might happen that the user canceled the creation process before any data or error message is available
+        if (result!){
+          if (this.isPathwayEvent(result)) {
   
-        if (result) {
-  
-          this.pathwayEventEmitter.emit(result as PathwayEvent);
-  
+            this.pathwayEventEmitter.emit(result as PathwayEvent);
+    
+          } else {
+            result = <WebSpeechSynthesisMessage> result;
+            // otherwise we got an error message 
+            this.displayErrorMessage(result.data);
+          }
         }
-  
+
         this.restartSpeechRecognition();
       });
   
@@ -283,4 +291,21 @@ export class PathwayControlComponent implements OnInit {
       this.speechRecognitionService.startRecognition();
 
     }
+
+    /**
+     * A type checker for checking whether a givne object is of type {@link PathwayEvent}.
+     * 
+     * @param objectToCheck that object that might be a {@link PathwayEvent}
+     * 
+     * @returns true if the type check succeeds, else false
+     */
+    private isPathwayEvent(objectToCheck:any): boolean {
+
+      if (objectToCheck?.date && objectToCheck?.header && objectToCheck?.content) {
+        return true;
+      }
+      return false;
+
+    }
+
 }
