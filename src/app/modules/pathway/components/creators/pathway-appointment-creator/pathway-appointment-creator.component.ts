@@ -189,7 +189,7 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
             next: () => {
 
               synthesizerSubscription.unsubscribe();
-              this.listenForNextFormInput();
+              this.getDateInput();
             }
           });
 
@@ -430,16 +430,15 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
         this.recordingFormInput = false;
         this.creatorContentClass = "is-not-recording";
         
-
       }
     }));
 
     this.currentFormSubscriptions.push(this.speechRecognitionService.onSpeechRecognitionError().subscribe({
       next: (message: WebSpeechRecognitionMessage) => {
 
+        this.clearFormInputSubscriptions();
         this.displayErrorMessage(message.data);
 
-        this.clearFormInputSubscriptions();
         this.isLastVoiceInputValid = false;
         this.recordingFormInput = false;
         this.creatorContentClass = "is-not-recording";
