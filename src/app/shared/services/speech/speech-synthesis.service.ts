@@ -79,6 +79,79 @@ export class SpeechSynthesisService {
     });
   }
 
+  public onErrorEvent(): Observable<WebSpeechSynthesisMessage> {
+
+    return new Observable(subscriber => {
+      this.speechSynthesisUtterance.addEventListener("error",(errorEvent) => {
+
+        let customErrorMessage: string = "";
+        let errorIdentifier: string = errorEvent.error;
+
+        // see https://developer.mozilla.org/en-US/docs/Web/API/SpeechSynthesisErrorEvent/error for reference
+
+        switch(errorIdentifier) {
+
+          case "canceled": {
+            customErrorMessage = "Die Sprachsynthetisierung konnte nicht gestartet werden."
+            break;
+          }
+          case "interrupted": {
+            customErrorMessage = "Die Sprachsynthetisierung wurde unterbrochen."
+            break;
+          }
+          case "audio-busy": {
+            customErrorMessage = "Die Sprachsynthetisierung konnte nicht gestartet werden, da das Audioausgabegerät beschäftigt ist."
+            break;
+          }
+          case "audio-hardware": {
+            customErrorMessage = "Bitte schließen Sie ein entsprechendes Audiogerät an, um die Sprachsynthetisierung nutzen zu können."
+            break;
+          }
+          case "network": {
+            customErrorMessage = "Ein Netzwerkfehler ist bei der Sprachsynthetisierung aufgetreten."
+            break;
+          }
+          case "synthesis-unavailable": {
+            customErrorMessage = "Für die Sprachausgabe konnte keine Sprachsynthetisierung durchgeführt werden."
+            break;
+          }
+          case "synthesis-failed": {
+            customErrorMessage = "Während der Sprachsynthetisierung ist ein Fehler aufgetreten."
+            break;
+          }
+          case "language-unavailable": {
+            customErrorMessage = "Die gewählte Sprache steht für die Sprachsynthetisierung nicht zur Verfügung."
+            break;
+          }
+          case "voice-unavailable": {
+            customErrorMessage = "Die gewählte Stimme steht für die Sprachsynthetisierung nicht zur Verfügung."
+            break;
+          }
+          case "text-too-long": {
+            customErrorMessage = "Der Text ist zu lang für eine Sprachsynthetisierung."
+            break;
+          }
+          case "invalid-argument": {
+            customErrorMessage = "Die Sprachsynthetisierung konnte nicht durchgeführt werden, da die konfigurierte Sprachgeschwindigkeit, -tonlage oder die -lautstärke invalide Werte enthalten."
+            break;
+          }
+          default: {
+            break;
+          }
+
+        }
+
+        let message: WebSpeechSynthesisMessage = {
+          data: customErrorMessage,
+          messageType: WebSpeechSynthesisMessageType.ERROR
+        };
+        subscriber.next(message);
+
+      })
+    })
+
+  }
+
   /**
    * Returns an Observable that can be subscribed to. The observable returns a value when the speech synthesizer has started talking out loud.
    * 

@@ -1,6 +1,7 @@
 export enum WebSpeechSynthesisMessageType {
 
     START,
-    END
+    END,
+    ERROR
 
 }
