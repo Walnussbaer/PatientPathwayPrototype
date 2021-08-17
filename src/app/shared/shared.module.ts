@@ -5,6 +5,7 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import {MatSnackBarModule} from '@angular/material/snack-bar'; 
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner'; 
 import {MatDialogModule} from '@angular/material/dialog'; 
+import {MatSelectModule} from '@angular/material/select'; 
 
 
 
@@ -16,14 +17,16 @@ import {MatDialogModule} from '@angular/material/dialog';
     FontAwesomeModule,
     MatSnackBarModule,
     MatProgressSpinnerModule,
-    MatDialogModule
+    MatDialogModule,
+    MatSelectModule
   ],
   exports: [
     MatButtonModule,
     FontAwesomeModule,
     MatSnackBarModule,
     MatProgressSpinnerModule,
-    MatDialogModule
+    MatDialogModule,
+    MatSelectModule
     
   ]
 })

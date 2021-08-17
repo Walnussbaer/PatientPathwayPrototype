@@ -46,7 +46,19 @@ export class SpeechSynthesisService {
 
     this.speechSynthesis =  window.speechSynthesis;
     this.speechSynthesisUtterance = new SpeechSynthesisUtterance();
+
     return true;
+  }
+
+  /**
+   * Sets a new voice to use for making utterances. 
+   * 
+   * @param voice the voice to use
+   */
+  public setVoice(voice: SpeechSynthesisVoice) {
+
+    this.speechSynthesisUtterance.voice = voice;
+    
   }
 
   /**
@@ -199,6 +211,23 @@ export class SpeechSynthesisService {
 
   }
 
+  public onVoiceListUpdated():Observable<WebSpeechSynthesisMessage> {
+
+    return new Observable(subscriber => {
+
+      // get available voices (depends on browser/ operating system)
+      this.speechSynthesis.addEventListener("voiceschanged",voicesListChangedEvent => {
+
+      let message: WebSpeechSynthesisMessage = {
+        data: this.speechSynthesis.getVoices(),
+        messageType: WebSpeechSynthesisMessageType.VOICES_CHANGED
+      };
+
+      subscriber.next(message);
+      });
+    });
+  }
+
   /**
    * Get the available voices in the currently active browser. 
    * 
@@ -213,6 +242,8 @@ export class SpeechSynthesisService {
     }
 
     let availableVoices: SpeechSynthesisVoice[] = this.speechSynthesis.getVoices();
+
+    console.log(window.speechSynthesis.getVoices());
 
     return availableVoices;
 

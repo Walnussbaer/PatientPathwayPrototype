@@ -13,6 +13,12 @@
 
     <p *ngIf="pathIsListening" id="controlDescription">Für eine Übersicht über die Sprachbefehle, sagen Sie "Hilfe".</p>
 
+    <select (change)="onVoiceChanged($event)" name="voices" id="voice-select">
+
+        <option *ngFor="let voice of availableVoices" [value]="voice.voiceURI">{{voice.name}}</option>
+
+    </select>
+
     <!--<button mat-raised-button color="accent" (click)="openHelpDialog()">Sprachbefehle anzeigen</button>-->
 
     <!--<button mat-raised-button color="accent" (click)="explainPathwayControls()">Erklär mir meinen Pfad</button>-->

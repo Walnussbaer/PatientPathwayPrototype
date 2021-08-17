@@ -35,6 +35,11 @@ export class PathwayControlComponent implements OnInit {
   @Output() userWantsDoDeleteEvent = new EventEmitter<string>();
 
   /**
+   * The voices the user can choose from for the speech synthesizer. Take some time to load. 
+   */
+  public availableVoices: SpeechSynthesisVoice[] = [];
+
+  /**
    * Indicated whether the speech recognition is availabe for usage. 
    */
   public speechRecognitionAvailable: boolean = false;
@@ -64,6 +69,7 @@ export class PathwayControlComponent implements OnInit {
   ngOnInit(): void {
 
     this.speechRecognitionAvailable = this.speechRecognitionService.initRecognition();
+    console.log(this.speechSynthesisService.getAvailableVoices());
 
     // check whether we can use the speech recognition
     if (!this.speechRecognitionAvailable) {
@@ -98,6 +104,23 @@ export class PathwayControlComponent implements OnInit {
         }
       }
     });
+
+    // subscribe for voice list (it takes some time to load the available voices from the browser/ operation system)
+    this.speechSynthesisService.onVoiceListUpdated().subscribe({
+      next: (result: WebSpeechSynthesisMessage) => {
+
+        let allVoices = result.data as SpeechSynthesisVoice[];
+        let germanVoices : SpeechSynthesisVoice[] = [];
+        
+        // we only want to choose from german voices, because the other voices make no sense for german text
+        germanVoices = allVoices.filter((voice)=>{
+          return voice.lang == "de-DE";
+        });
+
+        this.availableVoices = germanVoices;
+
+      }
+    })
 
   }
   
@@ -138,6 +161,27 @@ export class PathwayControlComponent implements OnInit {
       
     })
 
+  }
+
+  /**
+   * Gets called when the user changed the selected voice in the available voices dropdown. 
+   * 
+   * @param event the event that carries the selected value
+   */
+  public onVoiceChanged(event: any) {
+
+    let chosenVoiceURI: string = event.target.value;
+
+    let chosenVoice: SpeechSynthesisVoice | undefined = this.availableVoices.find((voice:SpeechSynthesisVoice) => {
+      if (voice.voiceURI === chosenVoiceURI){
+        return true;
+      }
+      return false;
+    });
+
+    if (chosenVoice){
+      this.speechSynthesisService.setVoice(chosenVoice);
+    }
   }
 
   /**

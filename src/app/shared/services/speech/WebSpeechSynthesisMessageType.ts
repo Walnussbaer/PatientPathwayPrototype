@@ -2,6 +2,7 @@ export enum WebSpeechSynthesisMessageType {
 
     START,
     END,
-    ERROR
+    ERROR,
+    VOICES_CHANGED
 
 }
