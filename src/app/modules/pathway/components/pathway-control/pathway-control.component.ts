@@ -76,7 +76,7 @@ export class PathwayControlComponent implements OnInit {
 
       console.warn("Speech recognition not available. Please use Google Chrome instead.");
 
-      this.displayErrorMessage("Die Spracherkennung wird in diesem Browser nicht unterstützt. Bitte nutzen Sie Google Chrome.")
+      this.displayMessage("Die Spracherkennung wird in diesem Browser nicht unterstützt. Bitte nutzen Sie Google Chrome.")
 
     } else {
 
@@ -190,7 +190,7 @@ export class PathwayControlComponent implements OnInit {
    * 
    * @param errorMessage the error message that shall be displayed 
    */
-  private displayErrorMessage(errorMessage: string): void {
+  private displayMessage(errorMessage: string): void {
 
     this.matSnackbarService.open(
       errorMessage,
@@ -232,6 +232,16 @@ export class PathwayControlComponent implements OnInit {
               break;
     
             }
+
+            case recognitionResult.match(/\w*(auf)\s(ein)\s(wiederhören)\w*/)?.input: {
+    
+              this.displayMessage("Man hört sich.");
+              this.speechRecognitionService.stopRecognition();
+    
+              break;
+    
+            }
+
             case recognitionResult.match(/\w*(hilfe)\w*/)?.input: {
 
               this.openHelpDialog();
@@ -282,7 +292,7 @@ export class PathwayControlComponent implements OnInit {
     
             default: {
 
-              this.displayErrorMessage("Dieses Sprachkommando wird nicht unterstützt.");
+              this.displayMessage("Dieses Sprachkommando wird nicht unterstützt.");
 
               this.restartSpeechRecognition();
 
@@ -380,7 +390,7 @@ export class PathwayControlComponent implements OnInit {
             result = <WebSpeechSynthesisMessage> result;
             let errorMessage = result.data;
             // otherwise we got an error message 
-            this.displayErrorMessage(errorMessage);
+            this.displayMessage(errorMessage);
             this.speechSynthesisService.speakUtterance(errorMessage);
           }
         } else {
