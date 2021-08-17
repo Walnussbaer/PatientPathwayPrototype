@@ -29,6 +29,11 @@ export class PathwayControlComponent implements OnInit {
   @Output() userWantsToOpenEvent = new EventEmitter<string>();
 
   /**
+   * This event emitter emits an event when the user wants do delete a specific event in his/her pathway. 
+   */
+  @Output() userWantsDoDeleteEvent = new EventEmitter<string>();
+
+  /**
    * Indicated whether the speech recognition is availabe for usage. 
    */
   public speechRecognitionAvailable: boolean = false;
@@ -56,8 +61,6 @@ export class PathwayControlComponent implements OnInit {
 
   ngOnInit(): void {
 
-    this.speechSynthesisService.initSynthesis();
-    this.speechSynthesisService.getAvailableVoices();
     this.speechRecognitionAvailable = this.speechRecognitionService.initRecognition();
 
     // check whether we can use the speech recognition
@@ -74,6 +77,13 @@ export class PathwayControlComponent implements OnInit {
       this.speechRecognitionService.startRecognition();
 
     }
+
+    // when the speech synthesis service speaks, we don't want to listen for voice commands
+    this.speechSynthesisService.onSpeechStart().subscribe({
+      next: (result: WebSpeechSynthesisMessage) => {
+        this.speechRecognitionService.stopRecognition();
+      }
+    });
   }
 
   /**
@@ -183,13 +193,36 @@ export class PathwayControlComponent implements OnInit {
               break;
             }
 
-            case recognitionResult.match(/(zeige)\w*/)?.input: {
+            case recognitionResult.match(/(lösche)\w*/)?.input: {
 
-              console.log("Nutzer möchte Termin öffnen");
-
+              // get the name of the event the user wants to delete, it should be after a whitespace after the command name (lösche)
               let eventName: string = recognitionResult.substr(recognitionResult.indexOf(" ")).trim();
 
-              console.log("Extrahierte Name des Events: " + eventName);
+              console.log("user wants to delete event " + eventName);
+
+              if (eventName) {
+                this.userWantsDoDeleteEvent.emit(eventName);
+              }
+
+              // wait for the answer of the patient pathway, then restart recognition 
+              // not an ideal solution, because we create a very strong dependency here, but for now, this is fine
+              let synthesizerSubscription = this.speechSynthesisService.onSpeechEnd().subscribe({
+                next: (result) => {
+                  synthesizerSubscription.unsubscribe();
+                  this.restartSpeechRecognition();
+                  return;
+                }
+              });
+              
+              break;
+            }
+
+            case recognitionResult.match(/(zeige)\w*/)?.input: {
+
+              // get the name of the event the user wants to delete, it should be after a whitespace after the command name (zeige)
+              let eventName: string = recognitionResult.substr(recognitionResult.indexOf(" ")).trim();
+
+              console.log("user wants to show details of event " + eventName);
 
               if (eventName) {
                 this.userWantsToOpenEvent.emit(eventName);
@@ -281,7 +314,7 @@ export class PathwayControlComponent implements OnInit {
 
         // it might happen that the user canceled the creation process before any data or error message is available
         if (result!){
-
+      
           let synthesizerSubscription = this.speechSynthesisService.onSpeechEnd().subscribe({
             next: (result) => {
               synthesizerSubscription.unsubscribe();

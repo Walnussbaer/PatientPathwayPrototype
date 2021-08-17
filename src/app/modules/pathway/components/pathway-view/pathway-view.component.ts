@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { PathwayService } from 'src/app/shared/services/pathway/pathway.service';
-import { SpeechRecognitionService } from 'src/app/shared/services/speech/speech-recognition.service';
+import { SpeechSynthesisService } from 'src/app/shared/services/speech/speech-synthesis.service';
 import { PathwayEvent } from '../../model/PathwayEvent';
 
 @Component({
@@ -15,7 +15,7 @@ export class PathwayViewComponent implements OnInit {
    */
   public pathwayEvents: PathwayEvent[] = [];
 
-  constructor(private pathwayService: PathwayService) { }
+  constructor(private pathwayService: PathwayService, private speechSynthesisService: SpeechSynthesisService) { }
 
   ngOnInit(): void {
 
@@ -49,6 +49,24 @@ export class PathwayViewComponent implements OnInit {
   public onUserWantsToOpenPathwayEvent(eventName: string): void {
 
     this.pathwayService.emitNewOpenPathwayEvent(eventName);
+
+  }
+
+  /**
+   * Gets called when the user wants to delete a specific event, identified by name. 
+   * @param eventName 
+   */
+  public onUserWantsToDeletePathwayEvent(eventName: string): void {
+
+    this.pathwayEvents = this.pathwayEvents.filter((event: PathwayEvent) => {
+
+      if (event.header?.toLocaleLowerCase() == eventName) return false;
+      return true;
+
+    } );
+
+    this.speechSynthesisService.speakUtterance("Der Termin wurde erfolgreich gelöscht!");
+    console.log(this.pathwayEvents);
 
   }
 

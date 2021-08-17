@@ -1,7 +1,7 @@
 export interface PathwayEvent {
 
     date?: Date;
-    header?: any;
+    header?: string;
     content?: any;
     
 }

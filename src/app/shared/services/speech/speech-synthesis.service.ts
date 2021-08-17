@@ -9,6 +9,11 @@ import { WebSpeechSynthesisMessageType } from './WebSpeechSynthesisMessageType';
 export class SpeechSynthesisService {
 
   /**
+   * Whether the service is currently speaking an utterance or not. 
+   */
+  private isSpeaking: boolean = false;
+
+  /**
    * The controller interface for the speech synthesis.
    */
   private speechSynthesis!: SpeechSynthesis;
@@ -31,6 +36,12 @@ export class SpeechSynthesisService {
     if (!('speechSynthesis' in window)){
       console.log("Die Sprachsynthetisierung wird in diesem Browser leider nicht unterstützt.");
       return false;
+    }
+
+    // if the service was already initialized
+    if (this.speechSynthesis && this.speechSynthesisUtterance){
+      console.warn("speech synthesizer already initialized");
+      return true;
     }
 
     this.speechSynthesis =  window.speechSynthesis;
@@ -66,6 +77,8 @@ export class SpeechSynthesisService {
 
       this.speechSynthesisUtterance.addEventListener("end",(endEvent)=> {
 
+        this.isSpeaking = false;
+
         let message: WebSpeechSynthesisMessage = {
           data: "Stopped talking",
           messageType: WebSpeechSynthesisMessageType.END
@@ -82,6 +95,8 @@ export class SpeechSynthesisService {
 
     return new Observable(subscriber => {
       this.speechSynthesisUtterance.addEventListener("error",(errorEvent) => {
+
+        this.isSpeaking = false;
 
         let customErrorMessage: string = "";
         let errorIdentifier: string = errorEvent.error;
@@ -168,6 +183,8 @@ export class SpeechSynthesisService {
     return new Observable(subscriber => {
 
       this.speechSynthesisUtterance.addEventListener("start", (startEvent)=> {
+
+        this.isSpeaking = true;
 
         let message: WebSpeechSynthesisMessage = {
           data: "Started talking",

@@ -1,6 +1,10 @@
 <div id="background">
 
-    <pathway-control (newPathwayEventCreated)="onNewPathwayEvent($event)" (userWantsToOpenEvent)="onUserWantsToOpenPathwayEvent($event)"></pathway-control>
+    <pathway-control 
+        (newPathwayEventCreated)="onNewPathwayEvent($event)" 
+        (userWantsToOpenEvent)="onUserWantsToOpenPathwayEvent($event)"
+        (userWantsDoDeleteEvent)="onUserWantsToDeletePathwayEvent($event)">
+    </pathway-control>
 
     <patient-pathway id="pathway" [pathwayEvents]="pathwayEvents"></patient-pathway>
 

@@ -222,7 +222,7 @@ export class SpeechRecognitionService {
       // the observable shall emit values when an error occured during the speech recognition
       this.speechRecognition.addEventListener("error",(errorEvent) => {
 
-        console.error("WSA error occured");
+        //console.error("WSA error occured");
         this.isRecognizing = false;
 
         let customErrorMessage = "";

@@ -23,8 +23,6 @@ export class PathwayControlHelpDialogComponent implements OnInit {
 
   ngOnInit(): void {
 
-
-
     this.speechRecognitionService.initRecognition();
     this.setupSpeechRecognitionBehaviour();
     this.speechRecognitionService.startRecognition();

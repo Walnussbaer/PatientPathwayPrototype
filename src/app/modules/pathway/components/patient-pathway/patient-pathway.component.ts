@@ -24,7 +24,7 @@ export class PatientPathwayComponent implements OnInit,OnChanges {
   /**
    * The size of the dots used in the pathway representation. 
    */
-  public pathwayDotSize: number = 60;
+  public pathwayDotSize: number = 50;
 
   /**
    * Set to true if you want the pathway to have it's entries alternat the side. 

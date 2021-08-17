@@ -68,8 +68,6 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
 
   public ngOnInit(): void {
 
-    this.speechSynthesisService.initSynthesis();
-
     // define what shall happen when the synthesizer started speaking
     this.speechSynthesisService.onSpeechStart().subscribe({
       next: (result => {
