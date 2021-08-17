@@ -224,14 +224,14 @@ export class PathwayControlComponent implements OnInit {
           // we need to do a string check on the transcript, since grammars don't work yet in the Google implementation of the Web Speech API
           switch (recognitionResult) {
     
-            case "neuer termin": {
+            case recognitionResult.match(/\w*(neuer)\s(termin)\w*/)?.input: {
     
               this.openAndHandlePathwayAppointmentCreatorDialog();
     
               break;
     
             }
-            case "hilfe": {
+            case recognitionResult.match(/\w*(hilfe)\w*/)?.input: {
 
               this.openHelpDialog();
 
