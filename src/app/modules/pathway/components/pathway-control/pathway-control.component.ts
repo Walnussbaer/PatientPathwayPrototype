@@ -69,7 +69,6 @@ export class PathwayControlComponent implements OnInit {
   ngOnInit(): void {
 
     this.speechRecognitionAvailable = this.speechRecognitionService.initRecognition();
-    console.log(this.speechSynthesisService.getAvailableVoices());
 
     // check whether we can use the speech recognition
     if (!this.speechRecognitionAvailable) {

@@ -243,10 +243,6 @@ export class SpeechSynthesisService {
 
     let availableVoices: SpeechSynthesisVoice[] = this.speechSynthesis.getVoices();
 
-    console.log(window.speechSynthesis.getVoices());
-
     return availableVoices;
-
   }
-
 }
