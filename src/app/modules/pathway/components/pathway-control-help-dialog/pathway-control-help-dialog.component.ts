@@ -39,7 +39,7 @@ export class PathwayControlHelpDialogComponent implements OnInit {
 
         recognitionResult = recognitionResult.toLowerCase();
 
-        if (recognitionResult == "dialog schließen") {
+        if (recognitionResult.match(/\w*(dialog)\s(schließen)\w*/)) {
 
           this.unsubscribeFromAllSubscriptions();
           this.dialogRef.close();

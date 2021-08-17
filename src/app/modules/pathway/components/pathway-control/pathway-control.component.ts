@@ -54,6 +54,7 @@ export class PathwayControlComponent implements OnInit {
    */
   public voiceControlIcon: IconDefinition = faMicrophone;
 
+
   /**
    * The currently active subscriptions for observables. 
    */
@@ -85,16 +86,17 @@ export class PathwayControlComponent implements OnInit {
 
     }
 
-    // when the speech synthesis service speaks, we don't want to listen for voice commands
-    this.speechSynthesisService.onSpeechStart().subscribe({
-      next: (result: WebSpeechSynthesisMessage) => {
-        this.speechRecognitionService.stopRecognition();
-      }
-    });
-
     // define what shall happen when pathway events got deleted
     this.pathwayService.onPathwayEventDeleted().subscribe({
       next: (result:boolean) => {
+
+        // when the speech synthesis service speaks, we don't want to listen for voice commands
+        let synthesizerSubscription = this.speechSynthesisService.onSpeechStart().subscribe({
+          next: (result: WebSpeechSynthesisMessage) => {
+            synthesizerSubscription.unsubscribe();
+            this.speechRecognitionService.stopRecognition();
+          }
+        });
 
         if (result == true) {
           this.speechSynthesisService.speakUtterance("Der Termin wurde erfolgreich gelöscht!");
