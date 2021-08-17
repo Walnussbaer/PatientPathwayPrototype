@@ -61,7 +61,7 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
     private speechRecognitionService: SpeechRecognitionService, 
     private speechSynthesisService: SpeechSynthesisService,
     private matSnackbarService: MatSnackBar,
-    public dialogRef: MatDialogRef<PathwayAppointmentCreatorComponent>
+    public dialogRef: MatDialogRef<PathwayAppointmentCreatorComponent>,
     ) {
       this.dialogRef.disableClose = true;
      }

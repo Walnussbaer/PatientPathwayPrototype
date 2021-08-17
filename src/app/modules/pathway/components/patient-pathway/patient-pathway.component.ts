@@ -62,14 +62,34 @@ export class PatientPathwayComponent implements OnInit,OnChanges {
    */
   private openPathwayEventUiContainer(elementId: string) {
 
+    if (this.isAlreadyOpen(elementId)) {
+      console.log("event is already expanded");
+      return;
+    };
+
     let containerToOpen: HTMLElement | null = document.getElementById(elementId);
 
     if (containerToOpen) {
       containerToOpen.click();
-    } else {
+    } 
+  }
 
-      //
+  /**
+   * Checks whether the UI container of a pathway event is already expanded or not. 
+   * 
+   * @param elementId that element that shall be checked
+   * 
+   * @return true if the element exists and is already open, else false
+   */
+  private isAlreadyOpen(elementId: string): boolean {
 
+    let uiContainer: HTMLElement | null = document.getElementById(elementId + "_container");
+
+    if (uiContainer) {
+
+      if (uiContainer.className == "expanded") return true;
     }
+
+    return false;
   }
 }

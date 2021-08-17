@@ -70,9 +70,9 @@ export class PathwayViewComponent implements OnInit {
         if (event.header?.toLocaleLowerCase() == eventName) return false;
         return true;
       });
-      this.speechSynthesisService.speakUtterance("Der Termin wurde erfolgreich gelöscht!");
+      this.pathwayService.answerPathwayDeleteRequest(true);
     } else {
-      this.speechSynthesisService.speakUtterance("Es gibt keinen Termin mit diesem Namen!");
+      this.pathwayService.answerPathwayDeleteRequest(false);
     }
   }
 

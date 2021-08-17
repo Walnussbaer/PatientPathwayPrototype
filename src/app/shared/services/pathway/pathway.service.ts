@@ -14,9 +14,14 @@ export class PathwayService {
   private testDataUrl: string = "/assets/data/PathwayEntries.json";
 
   /**
-   * A subject/ observable that can be subscribed to to define what shall happen when the user want's to open an existing pathway event. 
+   * The subject that manages the context of users wanting to see the details of a pathway event. 
    */
-  private openPathwayEventSubject: Subject<string> = new Subject();
+  private openDetailsRequest: Subject<string> = new Subject();
+
+  /**
+   * The subject that manages the context of users requesting to delete an event. 
+   */
+  private delteOperationRequest: Subject<boolean> = new Subject();
 
   constructor(private httpClient: HttpClient) { }
 
@@ -27,17 +32,40 @@ export class PathwayService {
    */
   public onNewPathwayEventOpeningClaim(): Observable<string> {
 
-    return this.openPathwayEventSubject;
+    return this.openDetailsRequest;
 
   }
 
   /**
+   * Returns an observable that can be subscribed to to define what shall happen when a pathway event got deleted. 
+   *  
+   * @returns the Observable to subscribe to
+   */
+  public onPathwayEventDeleted(): Observable<boolean> {
+
+    return this.delteOperationRequest;
+
+  }
+
+  /**
+   * Emits the event that the user requested to see the details of an event with a specific name. 
    * 
-   * @param eventName 
+   * @param eventName the name of the event that shall be opened
    */
   public emitNewOpenPathwayEvent(eventName: string) {
 
-    this.openPathwayEventSubject.next(eventName);
+    this.openDetailsRequest.next(eventName);
+
+  }
+
+  /**
+   * Emits the event that a pathway event got deleted. 
+   * 
+   * @param eventName whether the delete operation could be executed or not
+   */
+  public answerPathwayDeleteRequest(operationResult: boolean) {
+
+    this.delteOperationRequest.next(operationResult);
 
   }
 

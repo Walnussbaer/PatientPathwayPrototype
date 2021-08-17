@@ -3,6 +3,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { faMicrophone, IconDefinition } from '@fortawesome/free-solid-svg-icons';
 import { Subscription } from 'rxjs';
+import { PathwayService } from 'src/app/shared/services/pathway/pathway.service';
 import { SpeechRecognitionService } from 'src/app/shared/services/speech/speech-recognition.service';
 import { SpeechSynthesisService } from 'src/app/shared/services/speech/speech-synthesis.service';
 import { WebSpeechRecognitionMessage } from 'src/app/shared/services/speech/WebSpeechRecognitionMessage';
@@ -57,7 +58,8 @@ export class PathwayControlComponent implements OnInit {
     private matSnackbarService: MatSnackBar, 
     private speechRecognitionService: SpeechRecognitionService,
     private speechSynthesisService: SpeechSynthesisService,
-    private dialog: MatDialog) { }
+    private dialog: MatDialog,
+    private pathwayService: PathwayService) { }
 
   ngOnInit(): void {
 
@@ -66,9 +68,9 @@ export class PathwayControlComponent implements OnInit {
     // check whether we can use the speech recognition
     if (!this.speechRecognitionAvailable) {
 
-      console.warn("Speech recognition not available. Please use Google Chrome or Microsoft Edge instead.");
+      console.warn("Speech recognition not available. Please use Google Chrome instead.");
 
-      this.displayErrorMessage("Die Spracherkennung wird in diesem Browser nicht unterstützt. Bitte nutzen Sie Google Chrome oder Microsoft Edge.")
+      this.displayErrorMessage("Die Spracherkennung wird in diesem Browser nicht unterstützt. Bitte nutzen Sie Google Chrome.")
 
     } else {
 
@@ -84,22 +86,21 @@ export class PathwayControlComponent implements OnInit {
         this.speechRecognitionService.stopRecognition();
       }
     });
+
+    // define what shall happen when pathway events got deleted
+    this.pathwayService.onPathwayEventDeleted().subscribe({
+      next: (result:boolean) => {
+
+        if (result == true) {
+          this.speechSynthesisService.speakUtterance("Der Termin wurde erfolgreich gelöscht!");
+        } else {
+          this.speechSynthesisService.speakUtterance("Es gibt keinen Termin mit diesem Namen!");
+        }
+      }
+    });
+
   }
-
-  /**
-   * Gets called when the user wants an explanation of the pathway controls. 
-   */
-     public explainPathwayControls(): void {
-
-      let utteranceToSpeak = ("".concat(
-      "Das ist ihr persönlicher Patientenpfad.",
-      'Folgende Sprachbefehle stehen zur Verfügung:',
-      "Neuer Termin: Ermöglicht das Anlegen eines neuen Termins.",
-      "Hilfe: Öffnet ein Fenster mit einer Übersicht über die Sprachbefehle."));
-
-      this.speechSynthesisService.speakUtterance(utteranceToSpeak);
-
-    }
+  
   /**
    * Gets called when the user pressed the microphone button. 
    */
@@ -204,8 +205,9 @@ export class PathwayControlComponent implements OnInit {
                 this.userWantsDoDeleteEvent.emit(eventName);
               }
 
-              // wait for the answer of the patient pathway, then restart recognition 
-              // not an ideal solution, because we create a very strong dependency here, but for now, this is fine
+              this.restartSpeechRecognition();
+
+              // wait for synthesizer to answer the delete operation (behaviour is defined on initialization of this component)
               let synthesizerSubscription = this.speechSynthesisService.onSpeechEnd().subscribe({
                 next: (result) => {
                   synthesizerSubscription.unsubscribe();
