@@ -54,20 +54,26 @@ export class PathwayViewComponent implements OnInit {
 
   /**
    * Gets called when the user wants to delete a specific event, identified by name. 
-   * @param eventName 
+   * 
+   * @param eventName the name of the event that shall be deleted
    */
   public onUserWantsToDeletePathwayEvent(eventName: string): void {
 
-    this.pathwayEvents = this.pathwayEvents.filter((event: PathwayEvent) => {
+    let eventToDelete: PathwayEvent | undefined = this.pathwayEvents.find((event) => {
+      return event.header?.toLocaleLowerCase() == eventName;
+    });
 
-      if (event.header?.toLocaleLowerCase() == eventName) return false;
-      return true;
+    if (eventToDelete) {
 
-    } );
+      this.pathwayEvents = this.pathwayEvents.filter((event: PathwayEvent) => {
 
-    this.speechSynthesisService.speakUtterance("Der Termin wurde erfolgreich gelöscht!");
-    console.log(this.pathwayEvents);
-
+        if (event.header?.toLocaleLowerCase() == eventName) return false;
+        return true;
+      });
+      this.speechSynthesisService.speakUtterance("Der Termin wurde erfolgreich gelöscht!");
+    } else {
+      this.speechSynthesisService.speakUtterance("Es gibt keinen Termin mit diesem Namen!");
+    }
   }
 
   /**

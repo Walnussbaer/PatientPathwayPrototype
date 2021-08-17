@@ -66,6 +66,10 @@ export class PatientPathwayComponent implements OnInit,OnChanges {
 
     if (containerToOpen) {
       containerToOpen.click();
+    } else {
+
+      //
+
     }
   }
 }
