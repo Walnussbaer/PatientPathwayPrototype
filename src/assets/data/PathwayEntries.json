@@ -1,28 +1,27 @@
 [
     {
         "date": "Thu Jan 25 2010 00:00:00 GMT+0100",
-        "header": "Termin 1",
-        "content": "Ich bin ein Termin"
+        "header": "MRT-Untersuchung",
+        "content": "Anfertigung einer MRT Aufnahme im MS Zentrum"
     },
     {
         "date": "Thu Feb 01 2012 00:00:00 GMT+0100",
-        "header": "Termin 2",
-        "content": "Ich bin ein Termin"
+        "header": "Blutabnahme bei Hausarzt",
+        "content": "Blutabnahme bei Herrn Dr. Mustermann für großes Blutbild"
     },
     {
         "date": "Thu Apr 03 2014 00:00:00 GMT+0100",
-        "header": "Termin 3",
-        "content": "Ich bin ein Termin"
+        "header": "Besprechung Medikamentenwechsel",
+        "content": "Gespräch mit Frau Dr. Mustermann bezügliches eines Medikamentenwechsels aufgrund häufiger Schübe in letzter Zeit"
     },
     {
         "date": "Thu Dec 11 2016 00:00:00 GMT+0100",
-        "header": "Termin 4",
-        "content": "Ich bin ein Termin"
+        "header": "Informationsveranstaltung Relevanz von Sport und Ernährung bei MS",
+        "content": "Informationsveranstaltung von Herrn Dr. Wichtig zur Relevanz von Ernährungs- und Sportverhalten bei Multiple Sklerose"
     },
     {
         "date": "Thu Feb 01 2018 00:00:00 GMT+0100",
-        "header": "Termin 5",
-        "content": "Ich bin ein Termin"
+        "header": "Physiotherapie",
+        "content": "Physiotherapie bei Frau Müller im Reha Zentrum"
     }
-
 ]

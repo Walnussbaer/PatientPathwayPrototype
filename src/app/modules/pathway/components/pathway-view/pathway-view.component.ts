@@ -44,6 +44,15 @@ export class PathwayViewComponent implements OnInit {
   }
 
   /**
+   * Gets called when the user wants to open the details of a specific event in the pahtway. 
+   */
+  public onUserWantsToOpenPathwayEvent(eventName: string): void {
+
+    this.pathwayService.emitNewOpenPathwayEvent(eventName);
+
+  }
+
+  /**
    * Sorts the pathway entries by date. 
    */
   private sortPathwayEventsByDate(): void {

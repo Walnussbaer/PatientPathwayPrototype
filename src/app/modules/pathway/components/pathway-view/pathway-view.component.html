@@ -1,6 +1,6 @@
 <div id="background">
 
-    <pathway-control (pathwayEventEmitter)="onNewPathwayEvent($event)"></pathway-control>
+    <pathway-control (newPathwayEventCreated)="onNewPathwayEvent($event)" (userWantsToOpenEvent)="onUserWantsToOpenPathwayEvent($event)"></pathway-control>
 
     <patient-pathway id="pathway" [pathwayEvents]="pathwayEvents"></patient-pathway>
 

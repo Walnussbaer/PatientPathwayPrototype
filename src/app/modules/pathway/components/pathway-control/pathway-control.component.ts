@@ -21,7 +21,12 @@ export class PathwayControlComponent implements OnInit {
   /**
    * This event emitter emits an event when a new pathway event got created by the user. 
    */
-  @Output() pathwayEventEmitter = new EventEmitter<PathwayEvent>();
+  @Output() newPathwayEventCreated = new EventEmitter<PathwayEvent>();
+
+  /**
+   * This event emitter emits an event when the user wants to open a specific event in his/her pathway. 
+   */
+  @Output() userWantsToOpenEvent = new EventEmitter<string>();
 
   /**
    * Indicated whether the speech recognition is availabe for usage. 
@@ -156,7 +161,7 @@ export class PathwayControlComponent implements OnInit {
           this.speechRecognitionService.stopRecognition();
     
           // get the recognition result ("the command that was said")
-          let recognitionResult = message.data;
+          let recognitionResult:string = message.data;
     
           // conert transcript to lower case, since at this point capital or small letters do not matter
           recognitionResult = recognitionResult.toLowerCase();
@@ -177,13 +182,28 @@ export class PathwayControlComponent implements OnInit {
 
               break;
             }
+
+            case recognitionResult.match(/(zeige)\w*/)?.input: {
+
+              console.log("Nutzer möchte Termin öffnen");
+
+              let eventName: string = recognitionResult.substr(recognitionResult.indexOf(" ")).trim();
+
+              console.log("Extrahierte Name des Events: " + eventName);
+
+              if (eventName) {
+                this.userWantsToOpenEvent.emit(eventName);
+              }
+
+              this.restartSpeechRecognition();
+              
+              break;
+            }
     
             default: {
 
               this.displayErrorMessage("Dieses Sprachkommando wird nicht unterstützt.");
 
-              // restart recognition
-              //this.setupSpeechRecognitionBehaviour();
               this.restartSpeechRecognition();
 
               break;
@@ -272,7 +292,7 @@ export class PathwayControlComponent implements OnInit {
 
           if (this.isPathwayEvent(result)) {
   
-            this.pathwayEventEmitter.emit(result as PathwayEvent);
+            this.newPathwayEventCreated.emit(result as PathwayEvent);
             this.speechSynthesisService.speakUtterance("Sie haben erfolgreich einen neuen Termin angelegt.");    
     
           } else {

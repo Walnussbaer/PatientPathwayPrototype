@@ -1,9 +1,9 @@
 <div>
 
-    <mgl-timeline id="pathway" [alternate]="pathwayEntryAlternation" [side]="pathwaySide" [toggle]=false [focusOnOpen]=true>
+    <mgl-timeline id="pathway" [alternate]="pathwayEntryAlternation" [side]="pathwaySide" [toggle]=true [focusOnOpen]=true>
 
         <mgl-timeline-entry *ngFor="let event of pathwayEvents, let i = index">
-            <mgl-timeline-entry-header class="pathway-entry-header">{{event.header}}</mgl-timeline-entry-header>
+            <mgl-timeline-entry-header [attr.id]="event.header.toLowerCase()" class="pathway-entry-header">{{event.header}}</mgl-timeline-entry-header>
             <mgl-timeline-entry-content>{{event.content}}</mgl-timeline-entry-content>
             <mgl-timeline-entry-dot [size]="pathwayDotSize" class="pathway-entry-dot"></mgl-timeline-entry-dot>
             <mgl-timeline-entry-side>{{event.date | date : "dd.MMMM.yyyy" : '' : 'de-DE'}}</mgl-timeline-entry-side>

@@ -1,4 +1,7 @@
-import { Component, Input, OnChanges, OnInit } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import { Component, Inject, Input, OnChanges, OnInit } from '@angular/core';
+import { MglTimelineEntryComponent } from 'angular-mgl-timeline/src/timeline/timeline-entry/timeline-entry.component';
+import { PathwayService } from 'src/app/shared/services/pathway/pathway.service';
 import { PathwayEvent } from '../../model/PathwayEvent';
 
 /**
@@ -33,9 +36,17 @@ export class PatientPathwayComponent implements OnInit,OnChanges {
    */
   public pathwaySide: string = "left";
 
-  constructor() { }
+  constructor(private pathwayService: PathwayService) { }
 
   ngOnInit(): void {
+
+    // subscribe to pathway open events using shared service 
+    this.pathwayService.onNewPathwayEventOpeningClaim().subscribe({
+      next: (eventToOpen:string) => {
+        console.log("pathway component is ordered to open event with name " + eventToOpen);
+        this.openPathwayEventUiContainer(eventToOpen);
+      }
+    });
   }
 
   public ngOnChanges() {
@@ -44,4 +55,17 @@ export class PatientPathwayComponent implements OnInit,OnChanges {
 
   }
 
+  /**
+   * Opens an mgl-timeline-entry in the pathway to show its details using the name of the event as the identifier. 
+   * 
+   * @param elementId the element to open
+   */
+  private openPathwayEventUiContainer(elementId: string) {
+
+    let containerToOpen: HTMLElement | null = document.getElementById(elementId);
+
+    if (containerToOpen) {
+      containerToOpen.click();
+    }
+  }
 }
