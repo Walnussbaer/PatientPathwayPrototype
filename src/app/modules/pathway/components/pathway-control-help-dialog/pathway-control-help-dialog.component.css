@@ -1,8 +1,26 @@
 th,td {
     padding: 10px;
-    text-align: left;
+    text-align: center;
+
+    border: 1px;
+    border-style: solid;
+    border-color: grey;
+    
 }
 
 h3 {
     text-align: center;
+}
+
+.warning-text {
+
+    color:red;
+
+}
+
+#helpTable {
+
+    border: 2px;
+    border-style: solid;
+    border-color: black;
 }

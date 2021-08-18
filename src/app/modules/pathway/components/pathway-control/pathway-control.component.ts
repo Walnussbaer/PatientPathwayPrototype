@@ -171,7 +171,7 @@ export class PathwayControlComponent implements OnInit {
     const helpDialogRef = this.dialog.open(
       PathwayControlHelpDialogComponent,
       {
-        width: "300px",
+        width: "60%",
         height: "80%",
       }
     );
