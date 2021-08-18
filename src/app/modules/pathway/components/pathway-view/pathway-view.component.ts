@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { PathwayService } from 'src/app/shared/services/pathway/pathway.service';
 import { SpeechSynthesisService } from 'src/app/shared/services/speech/speech-synthesis.service';
 import { PathwayEvent } from '../../model/PathwayEvent';
+import { PathwayEventType } from '../../model/PathwayEventType';
 
 @Component({
   selector: 'app-pathway-view',
@@ -38,9 +39,49 @@ export class PathwayViewComponent implements OnInit {
    */
   public onNewPathwayEvent(newPahtwayEvent: PathwayEvent): void {
 
-    this.pathwayEvents.push(newPahtwayEvent);
+    switch (newPahtwayEvent.type) {
 
-    this.sortPathwayEventsByDate();
+      case PathwayEventType.APPOINTMENT: {
+
+        this.pathwayEvents.push(newPahtwayEvent);
+        this.sortPathwayEventsByDate();
+        break;
+
+      }
+      
+      case PathwayEventType.SYMPTOM_BUNDLE: {
+
+        // check whether we already have some symptoms for the current date 
+        let existingSymptomBundleForDate: PathwayEvent | undefined = this.pathwayEvents.find((event: PathwayEvent)=>{
+
+          let dateOfEventToCompare: Date = new Date(event.date!);
+          let dateOfNewPathwayEvent: Date = new Date(newPahtwayEvent.date!);
+
+          //(time does not matter)
+          if (
+            dateOfEventToCompare.getDay() == dateOfNewPathwayEvent.getDay() 
+            &&dateOfEventToCompare.getFullYear() == dateOfNewPathwayEvent.getFullYear()
+            && dateOfEventToCompare.getMonth() == dateOfNewPathwayEvent.getMonth()) {
+              return true
+          }
+          return false;
+        });
+
+        if (existingSymptomBundleForDate) {
+
+          console.log("extend existing symptom bundle");
+          existingSymptomBundleForDate.content.push(newPahtwayEvent.content[0]);
+          this.sortPathwayEventsByDate();
+
+        } else {
+
+          console.log("create new symptom bundle");
+          this.pathwayEvents.push(newPahtwayEvent);
+          this.sortPathwayEventsByDate();
+        }
+      }
+      break;
+    }
   }
 
   /**
@@ -83,8 +124,8 @@ export class PathwayViewComponent implements OnInit {
 
     this.pathwayEvents = this.pathwayEvents.sort((firstPathwayEvent,secondPathwayEvent) => {
 
-      var firstDate: Date = new Date(firstPathwayEvent.date!);
-      var secondDate: Date = new Date(secondPathwayEvent.date!);
+      let firstDate: Date = new Date(firstPathwayEvent.date!);
+      let secondDate: Date = new Date(secondPathwayEvent.date!);
 
       return firstDate.getTime() - secondDate.getTime();
 

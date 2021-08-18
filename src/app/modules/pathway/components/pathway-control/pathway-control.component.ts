@@ -9,6 +9,7 @@ import { SpeechSynthesisService } from 'src/app/shared/services/speech/speech-sy
 import { WebSpeechRecognitionMessage } from 'src/app/shared/services/speech/WebSpeechRecognitionMessage';
 import { WebSpeechSynthesisMessage } from 'src/app/shared/services/speech/WebSpeechSynthesisMessage';
 import { PathwayEvent } from '../../model/PathwayEvent';
+import { PathwayEventType } from '../../model/PathwayEventType';
 import { PathwayAppointmentCreatorComponent } from '../creators/pathway-appointment-creator/pathway-appointment-creator.component';
 import { PathwayControlHelpDialogComponent } from '../pathway-control-help-dialog/pathway-control-help-dialog.component';
 
@@ -95,6 +96,25 @@ export class PathwayControlComponent implements OnInit {
           next: (result: WebSpeechSynthesisMessage) => {
             synthesizerSubscription.unsubscribe();
             this.speechRecognitionService.stopRecognition();
+          }
+        });
+
+        // we want to restart the speech recoginitoin after the synthesizer has spoken
+        let speechEndSynthesizerSubscription = this.speechSynthesisService.onSpeechEnd().subscribe({
+          next: (result) => {
+            speechEndSynthesizerSubscription.unsubscribe();
+            this.restartSpeechRecognition();
+            return;
+          }
+        });
+
+        // in case the synthesizer could not speak
+        let speechErrorSynthesizerSubscription = this.speechSynthesisService.onErrorEvent().subscribe({
+          next: (result) => {
+            speechErrorSynthesizerSubscription.unsubscribe();
+            this.displayMessage(result.data + "Der Termin wurde gelöscht.");
+            this.restartSpeechRecognition();
+            return;
           }
         });
 
@@ -217,15 +237,15 @@ export class PathwayControlComponent implements OnInit {
           this.speechRecognitionService.stopRecognition();
     
           // get the recognition result ("the command that was said")
-          let recognitionResult:string = message.data;
+          let recognitionResult: string = message.data;
     
           // conert transcript to lower case, since at this point capital or small letters do not matter
-          recognitionResult = recognitionResult.toLowerCase();
+          let convertedRecognitionResult: string = recognitionResult.toLowerCase();
     
           // we need to do a string check on the transcript, since grammars don't work yet in the Google implementation of the Web Speech API
-          switch (recognitionResult) {
+          switch (convertedRecognitionResult) {
     
-            case recognitionResult.match(/\w*(neuer)\s(termin)\w*/)?.input: {
+            case convertedRecognitionResult.match(/\w*(neuer)\s(termin)\w*/)?.input: {
     
               this.openAndHandlePathwayAppointmentCreatorDialog();
     
@@ -233,7 +253,24 @@ export class PathwayControlComponent implements OnInit {
     
             }
 
-            case recognitionResult.match(/\w*(auf)\s(ein)\s(wiederhören)\w*/)?.input: {
+            case convertedRecognitionResult.match(/\w*(neues)\s(symptom)\s\w+/)?.input: {
+
+              // find out where the symptom string starts in the recognition result
+              // we use the converted recognition result, in case the recognizer did not corretly use small/ capital letters
+              let keywordStringPosition = convertedRecognitionResult.indexOf("symptom");
+              // the symptom should be after the keyword 'symptom' and another whitespace
+              let symptomStringPosition = keywordStringPosition + "symptom".length + 1;
+              
+              // look for the symptom in the string (should be after the word 'symptom' and another whitespace)
+              let symptom = recognitionResult.substring(symptomStringPosition);
+    
+              this.addNewSymptom(symptom);
+    
+              break;
+    
+            }
+
+            case convertedRecognitionResult.match(/\w*(auf)\s(ein)\s(wiederhören)\w*/)?.input: {
     
               this.displayMessage("Man hört sich.");
               this.speechRecognitionService.stopRecognition();
@@ -242,42 +279,30 @@ export class PathwayControlComponent implements OnInit {
     
             }
 
-            case recognitionResult.match(/\w*(hilfe)\w*/)?.input: {
+            case convertedRecognitionResult.match(/\w*(hilfe)\w*/)?.input: {
 
               this.openHelpDialog();
 
               break;
             }
 
-            case recognitionResult.match(/(lösche)\w*/)?.input: {
+            case convertedRecognitionResult.match(/(lösche)\w*/)?.input: {
 
               // get the name of the event the user wants to delete, it should be after a whitespace after the command name (lösche)
-              let eventName: string = recognitionResult.substr(recognitionResult.indexOf(" ")).trim();
+              let eventName: string = convertedRecognitionResult.substr(convertedRecognitionResult.indexOf(" ")).trim();
 
               console.log("user wants to delete event " + eventName);
 
               if (eventName) {
                 this.userWantsDoDeleteEvent.emit(eventName);
-              }
-
-              this.restartSpeechRecognition();
-
-              // wait for synthesizer to answer the delete operation (behaviour is defined on initialization of this component)
-              let synthesizerSubscription = this.speechSynthesisService.onSpeechEnd().subscribe({
-                next: (result) => {
-                  synthesizerSubscription.unsubscribe();
-                  this.restartSpeechRecognition();
-                  return;
-                }
-              });
-              
+              }          
               break;
             }
 
-            case recognitionResult.match(/(zeige)\w*/)?.input: {
+            case convertedRecognitionResult.match(/(zeige)\w*/)?.input: {
 
               // get the name of the event the user wants to delete, it should be after a whitespace after the command name (zeige)
-              let eventName: string = recognitionResult.substr(recognitionResult.indexOf(" ")).trim();
+              let eventName: string = convertedRecognitionResult.substr(convertedRecognitionResult.indexOf(" ")).trim();
 
               console.log("user wants to show details of event " + eventName);
 
@@ -399,6 +424,51 @@ export class PathwayControlComponent implements OnInit {
         }
       });
   
+    }
+
+    /**
+     * Gets called when the user wants to add a new symptom to his pathway. 
+     * 
+     * @param symptom the symptom that is new
+     */
+    private addNewSymptom(symptom: string): void {
+
+      this.speechRecognitionService.stopRecognition();
+      this.pathIsListening = false;
+      this.unsubscribeFromAllSubscriptions();
+
+      console.log("user wants to add a new symptom: " + symptom);
+
+      let event: PathwayEvent = {
+        content: [symptom],
+        header: "Symptome",
+        date: new Date(),
+        type: PathwayEventType.SYMPTOM_BUNDLE
+      };
+
+      this.newPathwayEventCreated.emit(event);
+
+      // define what shall happen when the system has spoken to the user
+      let onSpeechEndSynthesizerSubscription = this.speechSynthesisService.onSpeechEnd().subscribe({
+        next: (result) => {
+          onSpeechEndSynthesizerSubscription.unsubscribe();
+          this.restartSpeechRecognition();
+          return;
+        }
+      });
+
+      // define what shall happen when an error occured at the synthesizer
+      let onSpeechErrorSynthesizerSubscription = this.speechSynthesisService.onErrorEvent().subscribe({
+        next: (result) => {
+          onSpeechErrorSynthesizerSubscription.unsubscribe();
+          this.displayMessage(result.data + "Das Symptom wurde ihrem Pfad hinzugefügt.");
+          this.restartSpeechRecognition();
+          return;
+        }
+      });
+
+      // inform the user about what just happended
+      this.speechSynthesisService.speakUtterance("Das Symptom wurde in ihren Pfad hinzugefügt.");
     }
 
     /**
