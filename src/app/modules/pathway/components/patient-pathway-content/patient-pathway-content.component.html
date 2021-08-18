@@ -1,0 +1,16 @@
+<div>
+
+    <div *ngIf="eventType=='appointment'">
+        <p>{{eventContent}}</p>
+    </div>
+
+    <div *ngIf="eventType=='symptom_bundle'">
+
+        <ul>
+            <li *ngFor="let symptom of eventContent">{{symptom}}</li>
+        </ul>
+
+    </div>
+
+
+</div>

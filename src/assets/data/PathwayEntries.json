@@ -2,26 +2,41 @@
     {
         "date": "Thu Jan 25 2010 00:00:00 GMT+0100",
         "header": "MRT-Untersuchung",
-        "content": "Anfertigung einer MRT Aufnahme im MS Zentrum"
+        "content": "Anfertigung einer MRT Aufnahme im MS Zentrum",
+        "type": "appointment"
     },
     {
         "date": "Thu Feb 01 2012 00:00:00 GMT+0100",
         "header": "Blutabnahme bei Hausarzt",
-        "content": "Blutabnahme bei Herrn Dr. Mustermann für großes Blutbild"
+        "content": "Blutabnahme bei Herrn Dr. Mustermann für großes Blutbild",
+        "type": "appointment"
+    },
+    {
+        "date": "Thu Feb 01 2013 00:00:00 GMT+0100",
+        "header": "Symptome",
+        "content": [
+            "Doppelbilder",
+            "Kopfschmerzen",
+            "Schwäche"
+        ],
+        "type": "symptom_bundle"
     },
     {
         "date": "Thu Apr 03 2014 00:00:00 GMT+0100",
         "header": "Besprechung Medikamentenwechsel",
-        "content": "Gespräch mit Frau Dr. Mustermann bezügliches eines Medikamentenwechsels aufgrund häufiger Schübe in letzter Zeit"
+        "content": "Gespräch mit Frau Dr. Mustermann bezügliches eines Medikamentenwechsels aufgrund häufiger Schübe in letzter Zeit",
+        "type": "appointment"
     },
     {
         "date": "Thu Dec 11 2016 00:00:00 GMT+0100",
         "header": "Informationsveranstaltung Relevanz von Sport und Ernährung bei MS",
-        "content": "Informationsveranstaltung von Herrn Dr. Wichtig zur Relevanz von Ernährungs- und Sportverhalten bei Multiple Sklerose"
+        "content": "Informationsveranstaltung von Herrn Dr. Wichtig zur Relevanz von Ernährungs- und Sportverhalten bei Multiple Sklerose",
+        "type": "appointment"
     },
     {
         "date": "Thu Feb 01 2018 00:00:00 GMT+0100",
         "header": "Physiotherapie",
-        "content": "Physiotherapie bei Frau Müller im Reha Zentrum"
+        "content": "Physiotherapie bei Frau Müller im Reha Zentrum",
+        "type": "appointment"
     }
 ]

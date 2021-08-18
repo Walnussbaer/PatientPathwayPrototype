@@ -11,6 +11,7 @@ import { SpeechSynthesisService } from 'src/app/shared/services/speech/speech-sy
 import { faMicrophone, IconDefinition } from '@fortawesome/free-solid-svg-icons';
 import { WebSpeechSynthesisMessage } from 'src/app/shared/services/speech/WebSpeechSynthesisMessage';
 import { faThemeisle } from '@fortawesome/free-brands-svg-icons';
+import { PathwayEventType } from '../../../model/PathwayEventType';
 
 @Component({
   selector: 'app-pathway-appointment-creator',
@@ -121,7 +122,8 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
       this.newPathwayEvent = {
         date: this.appointmentDate,
         header: this.appointmentCaption,
-        content: this.appointmentContent
+        content: this.appointmentContent,
+        type: PathwayEventType.APPOINTMENT
       }
   
       this.dialogRef.close(this.newPathwayEvent);

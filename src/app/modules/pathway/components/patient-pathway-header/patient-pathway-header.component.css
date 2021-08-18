@@ -1,0 +1,23 @@
+.patient-pathway-header {
+
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    flex-wrap: wrap;
+
+    justify-content: center;
+    align-items: center;
+
+}
+
+.header-icon {
+
+    margin-right: auto;
+
+}
+
+.header-text {
+
+    margin-right: auto;
+
+}

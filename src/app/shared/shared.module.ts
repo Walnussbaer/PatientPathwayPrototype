@@ -18,7 +18,8 @@ import {MatSelectModule} from '@angular/material/select';
     MatSnackBarModule,
     MatProgressSpinnerModule,
     MatDialogModule,
-    MatSelectModule
+    MatSelectModule,
+    FontAwesomeModule
   ],
   exports: [
     MatButtonModule,
@@ -26,7 +27,8 @@ import {MatSelectModule} from '@angular/material/select';
     MatSnackBarModule,
     MatProgressSpinnerModule,
     MatDialogModule,
-    MatSelectModule
+    MatSelectModule,
+    FontAwesomeModule
     
   ]
 })

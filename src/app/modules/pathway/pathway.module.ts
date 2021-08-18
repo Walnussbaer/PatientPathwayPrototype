@@ -7,6 +7,8 @@ import { PathwayControlComponent } from './components/pathway-control/pathway-co
 import { SharedModule } from 'src/app/shared/shared.module';
 import { PathwayControlHelpDialogComponent } from './components/pathway-control-help-dialog/pathway-control-help-dialog.component';
 import { PathwayAppointmentCreatorComponent } from './components/creators/pathway-appointment-creator/pathway-appointment-creator.component';
+import { PatientPathwayHeaderComponent } from './components/patient-pathway-header/patient-pathway-header.component';
+import { PatientPathwayContentComponent } from './components/patient-pathway-content/patient-pathway-content.component';
 
 
 
@@ -16,7 +18,9 @@ import { PathwayAppointmentCreatorComponent } from './components/creators/pathwa
     PathwayViewComponent,
     PathwayControlComponent,
     PathwayControlHelpDialogComponent,
-    PathwayAppointmentCreatorComponent
+    PathwayAppointmentCreatorComponent,
+    PatientPathwayHeaderComponent,
+    PatientPathwayContentComponent
   ],
   imports: [
     CommonModule,
