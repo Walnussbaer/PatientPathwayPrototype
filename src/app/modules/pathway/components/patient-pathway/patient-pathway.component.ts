@@ -2,6 +2,7 @@ import { DOCUMENT } from '@angular/common';
 import { Component, Inject, Input, OnChanges, OnInit } from '@angular/core';
 import { MglTimelineEntryComponent } from 'angular-mgl-timeline/src/timeline/timeline-entry/timeline-entry.component';
 import { PathwayService } from 'src/app/shared/services/pathway/pathway.service';
+import { SpeechSynthesisService } from 'src/app/shared/services/speech/speech-synthesis.service';
 import { PathwayEvent } from '../../model/PathwayEvent';
 
 /**
@@ -36,7 +37,7 @@ export class PatientPathwayComponent implements OnInit,OnChanges {
    */
   public pathwaySide: string = "left";
 
-  constructor(private pathwayService: PathwayService) { }
+  constructor(private pathwayService: PathwayService, private speechSynthesisService: SpeechSynthesisService) { }
 
   ngOnInit(): void {
 
@@ -74,7 +75,11 @@ export class PatientPathwayComponent implements OnInit,OnChanges {
 
     if (containerToOpen) {
       containerToOpen.click();
-    } 
+      this.pathwayService.emitNewPathwayEventOpenEvent(pathwayEvent);
+    } else {
+
+      this.pathwayService.emitNewPathwayEventNotAvailableEvent(pathwayEvent);
+    }
   }
 
   /**

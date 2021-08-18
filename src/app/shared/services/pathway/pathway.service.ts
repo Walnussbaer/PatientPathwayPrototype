@@ -19,9 +19,20 @@ export class PathwayService {
   private openDetailsRequest: Subject<PathwayEvent> = new Subject();
 
   /**
+   * The subject that manages the context when the pathway actually opened the details of a pathway event. 
+   */
+  private pathwayEventOpened: Subject<PathwayEvent> = new Subject();
+
+    /**
+   * The subject that manages the context when a pathway event that is not availabe shall be handeled by the pathway (e.g the user wants to open a potential pathway event, which is not exiting)
+   */
+  private pathwayEventNotAvailable: Subject<PathwayEvent> = new Subject();
+
+  /**
    * The subject that manages the context of users requesting to delete an event. 
    */
   private delteOperationRequest: Subject<boolean> = new Subject();
+
 
   constructor(private httpClient: HttpClient) { }
 
@@ -33,6 +44,23 @@ export class PathwayService {
   public onNewPathwayEventOpeningClaim(): Observable<PathwayEvent> {
 
     return this.openDetailsRequest;
+
+  }
+
+    /**
+   * Returns an observable that can be subscribed to to define what shall happen when the pathway tries to open a specific pathway event. 
+   *  
+   * @returns the Observable to subscribe to
+   */
+  public onPathwayEventOpened(): Observable<PathwayEvent> {
+
+    return this.pathwayEventOpened;
+
+  }
+
+  public onPathwayEventNotAvailable(): Observable<PathwayEvent> {
+
+    return this.pathwayEventNotAvailable;
 
   }
 
@@ -48,13 +76,35 @@ export class PathwayService {
   }
 
   /**
-   * Emits the event that the user requested to see the details of an event with a specific name. 
+   * Emits the event that the user requested to see the details of an event, identified by date an name. 
    * 
    * @param eventName the name of the event that shall be opened
    */
-  public emitNewOpenPathwayEvent(eventName: PathwayEvent) {
+  public emitNewOpenPathwayEvent(event: PathwayEvent) {
 
-    this.openDetailsRequest.next(eventName);
+    this.openDetailsRequest.next(event);
+
+  }
+
+  /**
+   * Emits the event that the pathway tries to open the details of an event. 
+   * 
+   * @param event the event that is to be opened
+   */
+  public emitNewPathwayEventOpenEvent(event: PathwayEvent) {
+
+    this.pathwayEventOpened.next(event);
+
+  }
+
+  /**
+   * Emits the event that the pathway tries to open the details of an event. 
+   * 
+   * @param event the event that is to be opened
+   */
+  public emitNewPathwayEventNotAvailableEvent(event: PathwayEvent) {
+
+    this.pathwayEventNotAvailable.next(event);
 
   }
 

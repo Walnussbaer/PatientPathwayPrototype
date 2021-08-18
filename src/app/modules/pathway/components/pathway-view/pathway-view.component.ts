@@ -100,23 +100,38 @@ export class PathwayViewComponent implements OnInit {
   }
 
   /**
-   * Gets called when the user wants to delete a specific event, identified by name. 
+   * Gets called when the user wants to delete a specific event, identified by name and date. 
    * 
-   * @param eventName the name of the event that shall be deleted
+   * @param event the the event that shall be deleted
    */
-  public onUserWantsToDeletePathwayEvent(eventName: string): void {
+  public onUserWantsToDeletePathwayEvent(pathwayEvent: PathwayEvent): void {
 
-    let eventToDelete: PathwayEvent | undefined = this.pathwayEvents.find((event) => {
-      return event.header?.toLocaleLowerCase() == eventName;
+    let eventToDelete: PathwayEvent | undefined = this.pathwayEvents.find((event: PathwayEvent) => {
+
+      if (
+        event.header!.toLocaleLowerCase() == pathwayEvent.header!.toLocaleLowerCase() && 
+        event.date!.getDay() == pathwayEvent.date!.getDay() 
+        &&event.date!.getFullYear() == pathwayEvent.date!.getFullYear()
+        && event.date!.getMonth() == pathwayEvent.date!.getMonth()) {
+          return true
+      }
+      return false;
     });
 
     if (eventToDelete) {
 
       this.pathwayEvents = this.pathwayEvents.filter((event: PathwayEvent) => {
 
-        if (event.header?.toLocaleLowerCase() == eventName) return false;
+        if (
+          event.header!.toLocaleLowerCase() == eventToDelete!.header!.toLocaleLowerCase() && 
+          event.date!.getDay() == eventToDelete!.date!.getDay() 
+          &&event.date!.getFullYear() == eventToDelete!.date!.getFullYear()
+          && event.date!.getMonth() == eventToDelete!.date!.getMonth()) {
+            return false
+        }
         return true;
       });
+
       this.pathwayService.answerPathwayDeleteRequest(true);
     } else {
       this.pathwayService.answerPathwayDeleteRequest(false);

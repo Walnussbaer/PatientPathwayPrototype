@@ -33,7 +33,7 @@ export class PathwayControlComponent implements OnInit {
   /**
    * This event emitter emits an event when the user wants do delete a specific event in his/her pathway. 
    */
-  @Output() userWantsDoDeleteEvent = new EventEmitter<string>();
+  @Output() userWantsDoDeleteEvent = new EventEmitter<PathwayEvent>();
 
   /**
    * The voices the user can choose from for the speech synthesizer. Take some time to load. 
@@ -79,13 +79,45 @@ export class PathwayControlComponent implements OnInit {
 
       this.displayMessage("Die Spracherkennung wird in diesem Browser nicht unterstützt. Bitte nutzen Sie Google Chrome.")
 
-    } else {
-
-      this.setupSpeechRecognitionBehaviour();
-      // start to listen for voice commands
-      this.speechRecognitionService.startRecognition();
-
     }
+
+    // define what shall happen when pathway events are not available
+    this.pathwayService.onPathwayEventNotAvailable().subscribe({
+      next: (result: PathwayEvent) => {
+
+        let userMessage: string = "Es gibt kein Event mit dem Namen " + result.header + " zum Datum " + result.date?.toLocaleDateString("de-DE");
+
+        // when the speech synthesis service speaks, we don't want to listen for voice commands
+        let synthesizerSubscription = this.speechSynthesisService.onSpeechStart().subscribe({
+          next: (result: WebSpeechSynthesisMessage) => {
+            synthesizerSubscription.unsubscribe();
+            this.speechRecognitionService.stopRecognition();
+          }
+        });
+
+        // we want to restart the speech recoginitoin after the synthesizer has spoken
+        let speechEndSynthesizerSubscription = this.speechSynthesisService.onSpeechEnd().subscribe({
+          next: (result) => {
+            speechEndSynthesizerSubscription.unsubscribe();
+            this.restartSpeechRecognition();
+            return;
+          }
+        });
+
+        // in case the synthesizer could not speak
+        let speechErrorSynthesizerSubscription = this.speechSynthesisService.onErrorEvent().subscribe({
+          next: (result) => {
+            speechErrorSynthesizerSubscription.unsubscribe();
+            this.displayMessage(result.data + userMessage);
+            this.restartSpeechRecognition();
+            return;
+          }
+        });
+
+        this.speechSynthesisService.speakUtterance(userMessage);
+        
+      }
+    })
 
     // define what shall happen when pathway events got deleted
     this.pathwayService.onPathwayEventDeleted().subscribe({
@@ -112,16 +144,16 @@ export class PathwayControlComponent implements OnInit {
         let speechErrorSynthesizerSubscription = this.speechSynthesisService.onErrorEvent().subscribe({
           next: (result) => {
             speechErrorSynthesizerSubscription.unsubscribe();
-            this.displayMessage(result.data + "Der Termin wurde gelöscht.");
+            this.displayMessage(result.data + "Das Event wurde erfolgreich gelöscht.");
             this.restartSpeechRecognition();
             return;
           }
         });
 
         if (result == true) {
-          this.speechSynthesisService.speakUtterance("Der Termin wurde erfolgreich gelöscht!");
+          this.speechSynthesisService.speakUtterance("Das Event wurde erfolgreich gelöscht!");
         } else {
-          this.speechSynthesisService.speakUtterance("Es gibt keinen Termin mit diesem Namen!");
+          this.speechSynthesisService.speakUtterance("Es gibt kein Event mit diesem Namen an diesem Datum!");
         }
       }
     });
@@ -139,10 +171,8 @@ export class PathwayControlComponent implements OnInit {
         });
 
         this.availableVoices = germanVoices;
-
       }
     })
-
   }
   
   /**
@@ -286,22 +316,9 @@ export class PathwayControlComponent implements OnInit {
               break;
             }
 
-            case convertedRecognitionResult.match(/(lösche)\w*/)?.input: {
+            case convertedRecognitionResult.match(/(lösche)\s([\w-\säöü]*)\s(am)\s(\w*)/)?.input: {
 
-              // get the name of the event the user wants to delete, it should be after a whitespace after the command name (lösche)
-              let eventName: string = convertedRecognitionResult.substr(convertedRecognitionResult.indexOf(" ")).trim();
-
-              console.log("user wants to delete event " + eventName);
-
-              if (eventName) {
-                this.userWantsDoDeleteEvent.emit(eventName);
-              }          
-              break;
-            }
-
-            case convertedRecognitionResult.match(/(zeige)\s([\w-\säöü]*)\s(am)\s(\w*)/)?.input: {
-
-              // get string positions of the event name
+              // get the 'am' keyword position
               let firstWhitespaceStringPosition = convertedRecognitionResult.indexOf(" ");
               let keywordStringPosition = convertedRecognitionResult.lastIndexOf("am");
 
@@ -309,14 +326,40 @@ export class PathwayControlComponent implements OnInit {
               let eventNameStringStartPosition = firstWhitespaceStringPosition + 1;
               let eventNameLength = keywordStringPosition - 1 - firstWhitespaceStringPosition;
 
+              // get the name of the event from the transcript
               let eventName: string = convertedRecognitionResult.substr(firstWhitespaceStringPosition, eventNameLength).trim();
 
               // get the date that was mentioned
               let dateStringPosition = keywordStringPosition + "am".length + 1;
               let eventDate: Date = new Date(convertedRecognitionResult.substring(dateStringPosition));
-              console.log("mentioned date: " + eventDate);
 
-              console.log("user wants to show details of event " + eventName);
+              console.log("user wants to delete event " + eventName);
+
+              if (eventName) {
+                this.userWantsDoDeleteEvent.emit({
+                  header: eventName,
+                  date: eventDate
+                });
+              }          
+              break;
+            }
+
+            case convertedRecognitionResult.match(/(zeige)\s([\w-\säöü]*)\s(am)\s(\w*)/)?.input: {
+
+              // get the 'am' keyword position
+              let firstWhitespaceStringPosition = convertedRecognitionResult.indexOf(" ");
+              let keywordStringPosition = convertedRecognitionResult.lastIndexOf("am");
+
+              // calculate the position where the event should be in the transcipt
+              let eventNameStringStartPosition = firstWhitespaceStringPosition + 1;
+              let eventNameLength = keywordStringPosition - 1 - firstWhitespaceStringPosition;
+
+              // get the name of the event from the transcript
+              let eventName: string = convertedRecognitionResult.substr(firstWhitespaceStringPosition, eventNameLength).trim();
+
+              // get the date that was mentioned
+              let dateStringPosition = keywordStringPosition + "am".length + 1;
+              let eventDate: Date = new Date(convertedRecognitionResult.substring(dateStringPosition));
 
               if (eventName) {
                 this.userWantsToOpenEvent.emit({
