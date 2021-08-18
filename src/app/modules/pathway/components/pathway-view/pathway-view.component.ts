@@ -23,7 +23,13 @@ export class PathwayViewComponent implements OnInit {
     // call the business layer and get available events of pathway
     this.pathwayService.getPathwayEntries().subscribe({
       next: (result) =>  { 
-        this.pathwayEvents = result
+        this.pathwayEvents = result;
+
+        this.pathwayEvents.forEach((event:PathwayEvent) => {
+          // convert date field to real JS date
+          event.date = new Date(event.date!);
+        })
+
       },
 
       error: (error) => {
@@ -87,9 +93,9 @@ export class PathwayViewComponent implements OnInit {
   /**
    * Gets called when the user wants to open the details of a specific event in the pahtway. 
    */
-  public onUserWantsToOpenPathwayEvent(eventName: string): void {
+  public onUserWantsToOpenPathwayEvent(event: PathwayEvent): void {
 
-    this.pathwayService.emitNewOpenPathwayEvent(eventName);
+    this.pathwayService.emitNewOpenPathwayEvent(event);
 
   }
 

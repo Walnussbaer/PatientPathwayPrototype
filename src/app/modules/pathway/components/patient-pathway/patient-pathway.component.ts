@@ -42,9 +42,9 @@ export class PatientPathwayComponent implements OnInit,OnChanges {
 
     // subscribe to pathway open events using shared service 
     this.pathwayService.onNewPathwayEventOpeningClaim().subscribe({
-      next: (eventToOpen:string) => {
-        console.log("pathway component is ordered to open event with name " + eventToOpen);
-        this.openPathwayEventUiContainer(eventToOpen);
+      next: (event:PathwayEvent) => {
+        console.log("pathway component is ordered to open event with name " + event.header + " on date " + event.date?.toLocaleDateString('de-DE'));
+        this.openPathwayEventUiContainer(event);
       }
     });
   }
@@ -58,11 +58,14 @@ export class PatientPathwayComponent implements OnInit,OnChanges {
   /**
    * Opens an mgl-timeline-entry in the pathway to show its details using the name of the event as the identifier. 
    * 
-   * @param elementId the element to open
+   * @param pathwayEvent the element to open
    */
-  private openPathwayEventUiContainer(elementId: string) {
+  private openPathwayEventUiContainer(pathwayEvent: PathwayEvent) {
 
-    if (this.isAlreadyOpen(elementId)) {
+    let elementId:string = pathwayEvent.header + "_" + pathwayEvent.date?.toLocaleDateString("de-DE");
+    console.log(elementId);
+
+    if (this.isAlreadyOpen(pathwayEvent)) {
       console.log("event is already expanded");
       return;
     };
@@ -77,13 +80,15 @@ export class PatientPathwayComponent implements OnInit,OnChanges {
   /**
    * Checks whether the UI container of a pathway event is already expanded or not. 
    * 
-   * @param elementId that element that shall be checked
+   * @param pathwayEvent that element that shall be checked
    * 
    * @return true if the element exists and is already open, else false
    */
-  private isAlreadyOpen(elementId: string): boolean {
+  private isAlreadyOpen(pathwayEvent: PathwayEvent): boolean {
 
-    let uiContainer: HTMLElement | null = document.getElementById(elementId + "_container");
+    let containerId = pathwayEvent.header + "_" + pathwayEvent.date?.toLocaleDateString("de-DE") + "_container";
+
+    let uiContainer: HTMLElement | null = document.getElementById(containerId);
 
     if (uiContainer) {
 

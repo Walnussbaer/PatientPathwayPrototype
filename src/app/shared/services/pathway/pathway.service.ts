@@ -16,7 +16,7 @@ export class PathwayService {
   /**
    * The subject that manages the context of users wanting to see the details of a pathway event. 
    */
-  private openDetailsRequest: Subject<string> = new Subject();
+  private openDetailsRequest: Subject<PathwayEvent> = new Subject();
 
   /**
    * The subject that manages the context of users requesting to delete an event. 
@@ -30,7 +30,7 @@ export class PathwayService {
    *  
    * @returns the Observable to subscribe to
    */
-  public onNewPathwayEventOpeningClaim(): Observable<string> {
+  public onNewPathwayEventOpeningClaim(): Observable<PathwayEvent> {
 
     return this.openDetailsRequest;
 
@@ -52,7 +52,7 @@ export class PathwayService {
    * 
    * @param eventName the name of the event that shall be opened
    */
-  public emitNewOpenPathwayEvent(eventName: string) {
+  public emitNewOpenPathwayEvent(eventName: PathwayEvent) {
 
     this.openDetailsRequest.next(eventName);
 

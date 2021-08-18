@@ -84,7 +84,7 @@ export class SpeechRecognitionService {
       this.speechRecognition.lang = "de-DE";
 
       // defines whether the speech recognition system should return interim results or final results
-      this.speechRecognition.interimResults = true;
+      this.speechRecognition.interimResults = false;
 
       // sets the number of alternative potential matches that should be returned per result
       // This can sometimes be useful, say if a result is not completely clear and you want to display a list if alternatives for the user to choose the correct one from.

@@ -28,7 +28,7 @@ export class PathwayControlComponent implements OnInit {
   /**
    * This event emitter emits an event when the user wants to open a specific event in his/her pathway. 
    */
-  @Output() userWantsToOpenEvent = new EventEmitter<string>();
+  @Output() userWantsToOpenEvent = new EventEmitter<PathwayEvent>();
 
   /**
    * This event emitter emits an event when the user wants do delete a specific event in his/her pathway. 
@@ -299,15 +299,30 @@ export class PathwayControlComponent implements OnInit {
               break;
             }
 
-            case convertedRecognitionResult.match(/(zeige)\w*/)?.input: {
+            case convertedRecognitionResult.match(/(zeige)\s([\w-\säöü]*)\s(am)\s(\w*)/)?.input: {
 
-              // get the name of the event the user wants to delete, it should be after a whitespace after the command name (zeige)
-              let eventName: string = convertedRecognitionResult.substr(convertedRecognitionResult.indexOf(" ")).trim();
+              // get string positions of the event name
+              let firstWhitespaceStringPosition = convertedRecognitionResult.indexOf(" ");
+              let keywordStringPosition = convertedRecognitionResult.lastIndexOf("am");
+
+              // calculate the position where the event should be in the transcipt
+              let eventNameStringStartPosition = firstWhitespaceStringPosition + 1;
+              let eventNameLength = keywordStringPosition - 1 - firstWhitespaceStringPosition;
+
+              let eventName: string = convertedRecognitionResult.substr(firstWhitespaceStringPosition, eventNameLength).trim();
+
+              // get the date that was mentioned
+              let dateStringPosition = keywordStringPosition + "am".length + 1;
+              let eventDate: Date = new Date(convertedRecognitionResult.substring(dateStringPosition));
+              console.log("mentioned date: " + eventDate);
 
               console.log("user wants to show details of event " + eventName);
 
               if (eventName) {
-                this.userWantsToOpenEvent.emit(eventName);
+                this.userWantsToOpenEvent.emit({
+                  header: eventName,
+                  date: eventDate
+                });
               }
 
               this.restartSpeechRecognition();

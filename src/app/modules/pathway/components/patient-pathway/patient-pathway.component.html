@@ -2,9 +2,10 @@
 
     <mgl-timeline id="pathway" [alternate]="pathwayEntryAlternation" [side]="pathwaySide" [toggle]=true [focusOnOpen]=true>
 
-        <mgl-timeline-entry [attr.id]="event.header!.toLowerCase() + '_container'" *ngFor="let event of pathwayEvents, let i = index">
+        <!--we gonna construct a unique element if for every container so we can identify the container easily in our code-->
+        <mgl-timeline-entry [attr.id]="event.header!.toLowerCase() + '_' + event.date!.toLocaleDateString('de-DE') + '_container'" *ngFor="let event of pathwayEvents, let i = index">
 
-            <mgl-timeline-entry-header [attr.id]="event.header!.toLowerCase()" class="pathway-entry-header">
+            <mgl-timeline-entry-header [attr.id]="event.header!.toLowerCase() + '_' + event.date!.toLocaleDateString('de-DE')" class="pathway-entry-header">
                 <patient-pathway-header [eventType]="event.type" [eventHeader]="event.header"></patient-pathway-header>
             </mgl-timeline-entry-header>
 
