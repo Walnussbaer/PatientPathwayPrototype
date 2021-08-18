@@ -202,7 +202,6 @@ export class PathwayControlComponent implements OnInit {
       PathwayControlHelpDialogComponent,
       {
         width: "60%",
-        height: "80%",
       }
     );
 
