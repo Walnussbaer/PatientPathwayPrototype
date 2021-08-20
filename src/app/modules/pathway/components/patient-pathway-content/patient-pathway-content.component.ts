@@ -1,6 +1,9 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { PathwayEventType } from '../../model/PathwayEventType';
 
+/**
+ * This component can be used inside an mgl-timeline-entry-content component to display custom content of a pathway event. 
+ */
 @Component({
   selector: 'patient-pathway-content',
   templateUrl: './patient-pathway-content.component.html',
@@ -14,7 +17,6 @@ export class PatientPathwayContentComponent implements OnInit {
 
   constructor() { }
 
-  ngOnInit(): void {
-  }
+  ngOnInit(): void {}
 
 }

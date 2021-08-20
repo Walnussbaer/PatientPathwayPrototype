@@ -3,6 +3,9 @@ import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { faCalendarAlt, faClinicMedical, faHeadSideVirus, IconDefinition } from '@fortawesome/free-solid-svg-icons';
 import { PathwayEventType } from '../../model/PathwayEventType';
 
+/**
+ * This component can be used inside an mgl-timeline-entry-header component to display a custom header of a pathway event. 
+ */
 @Component({
   selector: 'patient-pathway-header',
   templateUrl: './patient-pathway-header.component.html',
@@ -27,7 +30,7 @@ export class PatientPathwayHeaderComponent implements OnInit {
   /**
    * Checks the type of the event and then defines, what icon the header shall use. 
    */
-  private identifyIconToUse() {
+  private identifyIconToUse(): void {
 
     switch (this.eventType) {
 

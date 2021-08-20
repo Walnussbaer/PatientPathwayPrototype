@@ -7,8 +7,6 @@ import { PathwayEvent } from '../../model/PathwayEvent';
 
 /**
  * A component that displays {@link PathwayEvent}s in a vertical timeline. 
- * 
- * @input pathwayEvents an array of {@link PathwayEvent}s that shall be displayed in the timeline
  */
 @Component({
   selector: 'patient-pathway',
@@ -28,16 +26,16 @@ export class PatientPathwayComponent implements OnInit,OnChanges {
   public pathwayDotSize: number = 50;
 
   /**
-   * Set to true if you want the pathway to have it's entries alternat the side. 
+   * Set to true if you want the pathway to have it's entries alternate the side. 
    */
   public pathwayEntryAlternation: boolean = false;
 
   /**
-   * Seriously, I don't know what this option does. The provided stackblitz of the author does not explain it, nor does the provided documentation. 
+   * Defines whether the pathway events shall be displayed on the left or the right side of the timeline. 
    */
   public pathwaySide: string = "left";
 
-  constructor(private pathwayService: PathwayService, private speechSynthesisService: SpeechSynthesisService) { }
+  constructor(private pathwayService: PathwayService) { }
 
   ngOnInit(): void {
 
@@ -45,39 +43,39 @@ export class PatientPathwayComponent implements OnInit,OnChanges {
     this.pathwayService.onNewPathwayEventOpeningClaim().subscribe({
       next: (event:PathwayEvent) => {
         console.log("pathway component is ordered to open event with name " + event.header + " on date " + event.date?.toLocaleDateString('de-DE'));
-        this.openPathwayEventUiContainer(event);
+        this.expandPathwayEventHeader(event);
       }
     });
   }
 
-  public ngOnChanges() {
-
-    console.log("Patient pathway changed");
-
-  }
+  public ngOnChanges() {}
 
   /**
-   * Opens an mgl-timeline-entry in the pathway to show its details using the name of the event as the identifier. 
+   * Expands an mgl-timeline-entry in the pathway to show the content of the pathway event using the header and the date of the event as the identifier. 
    * 
-   * @param pathwayEvent the element to open
+   * @param pathwayEvent the event of which the UI container shall be expanded
    */
-  private openPathwayEventUiContainer(pathwayEvent: PathwayEvent) {
+  private expandPathwayEventHeader(pathwayEvent: PathwayEvent) {
 
+    // construct the id of the ui element that we are looking for (not the entry itself, but the header, which can be clicked to get expanded)
     let elementId:string = pathwayEvent.header + "_" + pathwayEvent.date?.toLocaleDateString("de-DE");
-    console.log(elementId);
 
-    if (this.isAlreadyOpen(pathwayEvent)) {
-      console.log("event is already expanded");
+    // check whether the entry is already expanded
+    if (this.isExpanded(pathwayEvent)) {
+      console.log("event " + elementId + " is already expanded");
       return;
     };
 
+    // get the HTML (an mgl-timeline-entry-header) element that can be expanded using a click
     let containerToOpen: HTMLElement | null = document.getElementById(elementId);
 
+    // if element exists, open it using a simlulated mouse klick
     if (containerToOpen) {
       containerToOpen.click();
       this.pathwayService.emitNewPathwayEventOpenEvent(pathwayEvent);
     } else {
 
+      // if the desired event has no UI representation, we want to inform other components
       this.pathwayService.emitNewPathwayEventNotAvailableEvent(pathwayEvent);
     }
   }
@@ -89,12 +87,15 @@ export class PatientPathwayComponent implements OnInit,OnChanges {
    * 
    * @return true if the element exists and is already open, else false
    */
-  private isAlreadyOpen(pathwayEvent: PathwayEvent): boolean {
+  private isExpanded(pathwayEvent: PathwayEvent): boolean {
 
+    // construct the id of the ui element that we are looking for  (the mgl-timeline-entry holds the information whether it's content is expanded or not)
     let containerId = pathwayEvent.header + "_" + pathwayEvent.date?.toLocaleDateString("de-DE") + "_container";
 
+    // get the mgl-timeline-entry
     let uiContainer: HTMLElement | null = document.getElementById(containerId);
 
+    // check whether the mgl-timeline-entry is expanded
     if (uiContainer) {
 
       if (uiContainer.className == "expanded") return true;
