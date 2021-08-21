@@ -13,6 +13,9 @@ import { PathwayEventType } from '../../model/PathwayEventType';
 import { PathwayAppointmentCreatorComponent } from '../creators/pathway-appointment-creator/pathway-appointment-creator.component';
 import { PatientPathwayControlHelpDialogComponent } from '../patient-pathway-control-help-dialog/patient-pathway-control-help-dialog.component';
 
+/**
+ * A component for taking in user inputs/ user actions and handling them accordingly. 
+ */
 @Component({
   selector: 'patient-pathway-control',
   templateUrl: './patient-pathway-control.component.html',
@@ -41,25 +44,24 @@ export class PatientPathwayControlComponent implements OnInit {
   public availableVoices: SpeechSynthesisVoice[] = [];
 
   /**
-   * Indicated whether the speech recognition is availabe for usage. 
+   * Indicates whether the speech recognition is availabe for usage. 
    */
   public speechRecognitionAvailable: boolean = false;
 
   /**
    * Indicates whether the component is currently listening for user input via microphone. 
    */
-  public pathIsListening: boolean = false;
+  public isListening: boolean = false;
 
   /**
-   * The definition of the microphone activation button. 
+   * The definition of the microphone activation button icon. 
    */
   public voiceControlIcon: IconDefinition = faMicrophone;
 
-
   /**
-   * The currently active subscriptions for observables. 
+   * The currently active subscriptions for the speech recognition. 
    */
-  private currentSpeechRecognitionServiceSubscriptions: Array<Subscription> = [];
+  private currentSpeechRecognitionSubscriptions: Array<Subscription> = [];
 
   constructor(
     private matSnackbarService: MatSnackBar, 
@@ -81,36 +83,39 @@ export class PatientPathwayControlComponent implements OnInit {
 
     }
 
-    // define what shall happen when pathway events are not available
+    // define what shall happen when pathway events the user wants to show or delete are not available in the timeline/ patient pathway
     this.pathwayService.onPathwayEventNotAvailable().subscribe({
       next: (result: PathwayEvent) => {
 
         let userMessage: string = "Es gibt kein Event mit dem Namen " + result.header + " zum Datum " + result.date?.toLocaleDateString("de-DE");
 
         // when the speech synthesis service speaks, we don't want to listen for voice commands
-        let synthesizerSubscription = this.speechSynthesisService.onSpeechStart().subscribe({
+        let speechStartSynthesizerSubscription = this.speechSynthesisService.onSpeechStart().subscribe({
           next: (result: WebSpeechSynthesisMessage) => {
-            synthesizerSubscription.unsubscribe();
+
+            speechStartSynthesizerSubscription.unsubscribe();
             this.speechRecognitionService.stopRecognition();
           }
         });
 
-        // we want to restart the speech recoginitoin after the synthesizer has spoken
+        // we want to restart the speech recognition after the synthesizer has spoken
         let speechEndSynthesizerSubscription = this.speechSynthesisService.onSpeechEnd().subscribe({
           next: (result) => {
+
             speechEndSynthesizerSubscription.unsubscribe();
             this.restartSpeechRecognition();
-            return;
           }
         });
 
         // in case the synthesizer could not speak
         let speechErrorSynthesizerSubscription = this.speechSynthesisService.onErrorEvent().subscribe({
           next: (result) => {
+
+            let errorMessage = result.data;
+
             speechErrorSynthesizerSubscription.unsubscribe();
-            this.displayMessage(result.data + userMessage);
+            this.displayMessage(errorMessage + userMessage);
             this.restartSpeechRecognition();
-            return;
           }
         });
 
@@ -121,52 +126,58 @@ export class PatientPathwayControlComponent implements OnInit {
 
     // define what shall happen when pathway events got deleted
     this.pathwayService.onPathwayEventDeleted().subscribe({
-      next: (result:boolean) => {
+      next: (eventDeleted:boolean) => {
+
+        let userMessage = "";
+
+        if (eventDeleted) {
+          userMessage = "Das Event wurde erfolgreich gelöscht!"
+        } else {
+          userMessage = "Es gibt kein Event mit diesem Namen an diesem Datum!"
+        }
 
         // when the speech synthesis service speaks, we don't want to listen for voice commands
-        let synthesizerSubscription = this.speechSynthesisService.onSpeechStart().subscribe({
+        let speechStartSynthesizerSubscription = this.speechSynthesisService.onSpeechStart().subscribe({
           next: (result: WebSpeechSynthesisMessage) => {
-            synthesizerSubscription.unsubscribe();
+
+            speechStartSynthesizerSubscription.unsubscribe();
             this.speechRecognitionService.stopRecognition();
           }
         });
 
-        // we want to restart the speech recoginitoin after the synthesizer has spoken
+        // we want to restart the speech recognition after the synthesizer has spoken
         let speechEndSynthesizerSubscription = this.speechSynthesisService.onSpeechEnd().subscribe({
           next: (result) => {
+
             speechEndSynthesizerSubscription.unsubscribe();
             this.restartSpeechRecognition();
-            return;
           }
         });
 
         // in case the synthesizer could not speak
         let speechErrorSynthesizerSubscription = this.speechSynthesisService.onErrorEvent().subscribe({
           next: (result) => {
+
             speechErrorSynthesizerSubscription.unsubscribe();
-            this.displayMessage(result.data + "Das Event wurde erfolgreich gelöscht.");
+
+            let errorMessage = result.data;
+            this.displayMessage(errorMessage + userMessage);
             this.restartSpeechRecognition();
-            return;
           }
         });
 
-        if (result == true) {
-          this.speechSynthesisService.speakUtterance("Das Event wurde erfolgreich gelöscht!");
-        } else {
-          this.speechSynthesisService.speakUtterance("Es gibt kein Event mit diesem Namen an diesem Datum!");
-        }
+        this.speechSynthesisService.speakUtterance(userMessage);
       }
     });
 
-    // subscribe for voice list (it takes some time to load the available voices from the browser/ operation system)
+    // subscribe for voice list (it takes some time to load the available voices from the browser/ operating system)
     this.speechSynthesisService.onVoiceListUpdated().subscribe({
       next: (result: WebSpeechSynthesisMessage) => {
 
         let allVoices = result.data as SpeechSynthesisVoice[];
-        let germanVoices : SpeechSynthesisVoice[] = [];
-        
-        // we only want to choose from german voices, because the other voices make no sense for german text
-        germanVoices = allVoices.filter((voice)=>{
+
+        // we only want to choose from german voices, because the other voices make no sense for german utterances
+        let germanVoices: SpeechSynthesisVoice[] =  allVoices.filter((voice)=>{
           return voice.lang == "de-DE";
         });
 
@@ -205,24 +216,25 @@ export class PatientPathwayControlComponent implements OnInit {
       }
     );
 
+    // when the user closed the help dialog, we want to restart the speech recognition
     helpDialogRef.afterClosed().subscribe(result => {
       
       this.restartSpeechRecognition();
-      
     })
-
   }
 
   /**
    * Gets called when the user changed the selected voice in the available voices dropdown. 
    * 
-   * @param event the event that carries the selected value
+   * @param event the event that carries the selected value from the select element
    */
-  public onVoiceChanged(event: any) {
+  public onVoiceChanged(event: any): void {
 
     let chosenVoiceURI: string = event.target.value;
 
+    // find the chosen voice in all the available voices
     let chosenVoice: SpeechSynthesisVoice | undefined = this.availableVoices.find((voice:SpeechSynthesisVoice) => {
+
       if (voice.voiceURI === chosenVoiceURI){
         return true;
       }
@@ -235,32 +247,31 @@ export class PatientPathwayControlComponent implements OnInit {
   }
 
   /**
-   * Use this method to display user friendly error message to the user. 
+   * Use this method to display a message to the user. 
    * 
-   * @param errorMessage the error message that shall be displayed 
+   * @param messageToDisplay the message that shall be displayed 
    */
-  private displayMessage(errorMessage: string): void {
+  private displayMessage(messageToDisplay: string): void {
 
     this.matSnackbarService.open(
-      errorMessage,
+      messageToDisplay,
       "Verstanden", 
       {
         panelClass: ["warning-mat-snackbar"],
         duration: 8000, // in miliseconds,
         horizontalPosition: "center",
-        verticalPosition: "top"
+        verticalPosition: "bottom"
       });
   }
 
   /**
    * Set up the actions that should take place when the speech recognition is used. 
-   * 
-   * We need to do this only once during initialization of the componenent. 
+   *
    */
-  private setupSpeechRecognitionBehaviour() {
+  private setupSpeechRecognitionBehaviour(): void {
 
       // we subscribe to a potential result from the speech recognition service
-      this.currentSpeechRecognitionServiceSubscriptions.push(this.speechRecognitionService.onSpeechRecognitionResultAvailable().subscribe({
+      this.currentSpeechRecognitionSubscriptions.push(this.speechRecognitionService.onSpeechRecognitionResultAvailable().subscribe({
         next: (message: WebSpeechRecognitionMessage) => {
 
           this.speechRecognitionService.stopRecognition();
@@ -268,7 +279,7 @@ export class PatientPathwayControlComponent implements OnInit {
           // get the recognition result ("the command that was said")
           let recognitionResult: string = message.data;
     
-          // conert transcript to lower case, since at this point capital or small letters do not matter
+          // convert transcript to lower case, since for commands, capital or small letters do not matter
           let convertedRecognitionResult: string = recognitionResult.toLowerCase();
     
           // we need to do a string check on the transcript, since grammars don't work yet in the Google implementation of the Web Speech API
@@ -284,9 +295,10 @@ export class PatientPathwayControlComponent implements OnInit {
 
             case convertedRecognitionResult.match(/\w*(neues)\s(symptom)\s\w+/)?.input: {
 
-              // find out where the symptom string starts in the recognition result
+              // find out where the symptom keyword string starts in the recognition result
               // we use the converted recognition result, in case the recognizer did not corretly use small/ capital letters
               let keywordStringPosition = convertedRecognitionResult.indexOf("symptom");
+
               // the symptom should be after the keyword 'symptom' and another whitespace
               let symptomStringPosition = keywordStringPosition + "symptom".length + 1;
               
@@ -317,54 +329,23 @@ export class PatientPathwayControlComponent implements OnInit {
 
             case convertedRecognitionResult.match(/(lösche)\s([\w-\säöü]*)\s(am)\s(\w*)/)?.input: {
 
-              // get the 'am' keyword position
-              let firstWhitespaceStringPosition = convertedRecognitionResult.indexOf(" ");
-              let keywordStringPosition = convertedRecognitionResult.lastIndexOf("am");
+              let eventToDelete: PathwayEvent | null = this.getDesiredPathewayEventFromRecognitionTranscript(convertedRecognitionResult);
 
-              // calculate the position where the event should be in the transcipt
-              let eventNameStringStartPosition = firstWhitespaceStringPosition + 1;
-              let eventNameLength = keywordStringPosition - 1 - firstWhitespaceStringPosition;
+              if (eventToDelete) {
 
-              // get the name of the event from the transcript
-              let eventName: string = convertedRecognitionResult.substr(firstWhitespaceStringPosition, eventNameLength).trim();
+                console.log("user wants to delete event " + eventToDelete.header + " on date " + eventToDelete.date);
 
-              // get the date that was mentioned
-              let dateStringPosition = keywordStringPosition + "am".length + 1;
-              let eventDate: Date = new Date(convertedRecognitionResult.substring(dateStringPosition));
-
-              console.log("user wants to delete event " + eventName);
-
-              if (eventName) {
-                this.userWantsDoDeleteEvent.emit({
-                  header: eventName,
-                  date: eventDate
-                });
+                this.userWantsDoDeleteEvent.emit(eventToDelete);
               }          
               break;
             }
 
             case convertedRecognitionResult.match(/(zeige)\s([\w-\säöü]*)\s(am)\s(\w*)/)?.input: {
 
-              // get the 'am' keyword position
-              let firstWhitespaceStringPosition = convertedRecognitionResult.indexOf(" ");
-              let keywordStringPosition = convertedRecognitionResult.lastIndexOf("am");
+              let eventToExpand: PathwayEvent | null = this.getDesiredPathewayEventFromRecognitionTranscript(convertedRecognitionResult);
 
-              // calculate the position where the event should be in the transcipt
-              let eventNameStringStartPosition = firstWhitespaceStringPosition + 1;
-              let eventNameLength = keywordStringPosition - 1 - firstWhitespaceStringPosition;
-
-              // get the name of the event from the transcript
-              let eventName: string = convertedRecognitionResult.substr(firstWhitespaceStringPosition, eventNameLength).trim();
-
-              // get the date that was mentioned
-              let dateStringPosition = keywordStringPosition + "am".length + 1;
-              let eventDate: Date = new Date(convertedRecognitionResult.substring(dateStringPosition));
-
-              if (eventName) {
-                this.userWantsToOpenEvent.emit({
-                  header: eventName,
-                  date: eventDate
-                });
+              if (eventToExpand) {
+                this.userWantsToOpenEvent.emit(eventToExpand);
               }
 
               this.restartSpeechRecognition();
@@ -379,184 +360,212 @@ export class PatientPathwayControlComponent implements OnInit {
               this.restartSpeechRecognition();
 
               break;
-    
             }
           }
         }
       }));
 
-      this.currentSpeechRecognitionServiceSubscriptions.push(this.speechRecognitionService.onSpeechRecognitionStarted().subscribe({
+      // define what shall happen when the speech recognition started
+      this.currentSpeechRecognitionSubscriptions.push(this.speechRecognitionService.onSpeechRecognitionStarted().subscribe({
         next: (message: WebSpeechRecognitionMessage) => {
 
-          this.pathIsListening = true;
-
+          this.isListening = true;
         }
       }));
 
-      this.currentSpeechRecognitionServiceSubscriptions.push(this.speechRecognitionService.onSpeechRecognitionEnded().subscribe({
+      // define what shall happen when the speech recognition ended (e.g. if the user did not say anything)
+      this.currentSpeechRecognitionSubscriptions.push(this.speechRecognitionService.onSpeechRecognitionEnded().subscribe({
         next: (message: WebSpeechRecognitionMessage) => {
 
-         this.pathIsListening = false;
-
+         this.isListening = false;
         }
       }));
 
-      
-      this.currentSpeechRecognitionServiceSubscriptions.push(this.speechRecognitionService.onSpeechRecognitionError().subscribe({
+      // define what shall happen when an error occured during the speech recognition.
+      this.currentSpeechRecognitionSubscriptions.push(this.speechRecognitionService.onSpeechRecognitionError().subscribe({
         next: (message: WebSpeechRecognitionMessage) => {
+
+          let errorMessage = message.data;
           
-          console.warn(message.data);
+          console.warn(errorMessage);
 
           // when an error occured, we just restart the recoginition for now
-          // TODO in a future implementation, the error handling at this point should be more precise, e.g., if the error indicates that the user has no microphone enabled, then we shouln't just restart the recognition
+          // TODO in a future implementation, the error handling at this point should be more precise, e.g., if the error indicates that the user has no microphone enabled, then we shouldn't just restart the recognition
           this.restartSpeechRecognition();
-
-          //this.displayErrorMessage(message.data);   
         }
       }));
   }
 
   /**
-   * Clean up all currently active subscriptions. 
+   * Clean up all currently active speech recognition subscriptions. 
    */
-  private unsubscribeFromAllSubscriptions(): void {
+  private unsubscribeFromAllSpeechRecognitionSubscriptions(): void {
 
-    this.currentSpeechRecognitionServiceSubscriptions.forEach(subscription => {
+    this.currentSpeechRecognitionSubscriptions.forEach(subscription => {
 
       subscription.unsubscribe();
 
     })
 
-    this.currentSpeechRecognitionServiceSubscriptions = [];
+    this.currentSpeechRecognitionSubscriptions = [];
 
   }
 
   /**
    * Gets called when the speech recognition recognized that the user wants to create a new pathway event. 
    */
-     private openAndHandlePathwayAppointmentCreatorDialog(): void {
+  private openAndHandlePathwayAppointmentCreatorDialog(): void {
 
-      this.speechRecognitionService.stopRecognition();
-      this.pathIsListening = false;
-      this.unsubscribeFromAllSubscriptions();
+    this.speechRecognitionService.stopRecognition();
+    this.isListening = false;
+    this.unsubscribeFromAllSpeechRecognitionSubscriptions();
 
-      const pathwayAppointmentCreatorDialog = this.dialog.open(
-        PathwayAppointmentCreatorComponent,
-        {
-          //width: "80%",
-          //height: "30%",
-        }
-      );
-  
-      // define what shall happen after the pathway event creator component dialog is closed
-      pathwayAppointmentCreatorDialog.afterClosed().subscribe((result: PathwayEvent | WebSpeechSynthesisMessage) => {
+    const pathwayAppointmentCreatorDialog = this.dialog.open(PathwayAppointmentCreatorComponent);
 
-        // it might happen that the user canceled the creation process before any data or error message is available
-        if (result!){
-      
-          let synthesizerSubscription = this.speechSynthesisService.onSpeechEnd().subscribe({
-            next: (result) => {
-              synthesizerSubscription.unsubscribe();
-              this.restartSpeechRecognition();
-              return;
-            }
-          });
+    // define what shall happen after the pathway event creator component dialog is closed
+    pathwayAppointmentCreatorDialog.afterClosed().subscribe((result: PathwayEvent | WebSpeechSynthesisMessage) => {
 
-          if (this.isPathwayEvent(result)) {
-  
-            this.newPathwayEventCreated.emit(result as PathwayEvent);
-            this.speechSynthesisService.speakUtterance("Sie haben erfolgreich einen neuen Termin angelegt.");    
+      // it might happen that the user canceled the creation process before any data or error message is available
+      if (result!){
     
-          } else {
-
-            result = <WebSpeechSynthesisMessage> result;
-            let errorMessage = result.data;
-            // otherwise we got an error message 
-            this.displayMessage(errorMessage);
-            this.speechSynthesisService.speakUtterance(errorMessage);
+        let synthesizerSubscription = this.speechSynthesisService.onSpeechEnd().subscribe({
+          next: (result) => {
+            synthesizerSubscription.unsubscribe();
+            this.restartSpeechRecognition();
           }
+        });
+
+        if (this.isPathwayEvent(result)) {
+
+          this.newPathwayEventCreated.emit(result as PathwayEvent);
+          this.speechSynthesisService.speakUtterance("Sie haben erfolgreich einen neuen Termin angelegt.");    
+
         } else {
-        // restart to listen for voice commands
-        this.restartSpeechRecognition();
+
+          result = <WebSpeechSynthesisMessage> result;
+          let errorMessage = result.data;
+
+          // otherwise we got an error message 
+          this.displayMessage(errorMessage);
+          this.speechSynthesisService.speakUtterance(errorMessage);
         }
-      });
-  
-    }
-
-    /**
-     * Gets called when the user wants to add a new symptom to his pathway. 
-     * 
-     * @param symptom the symptom that is new
-     */
-    private addNewSymptom(symptom: string): void {
-
-      this.speechRecognitionService.stopRecognition();
-      this.pathIsListening = false;
-      this.unsubscribeFromAllSubscriptions();
-
-      console.log("user wants to add a new symptom: " + symptom);
-
-      let event: PathwayEvent = {
-        content: [symptom],
-        header: "Symptome",
-        date: new Date(),
-        type: PathwayEventType.SYMPTOM_BUNDLE
-      };
-
-      this.newPathwayEventCreated.emit(event);
-
-      // define what shall happen when the system has spoken to the user
-      let onSpeechEndSynthesizerSubscription = this.speechSynthesisService.onSpeechEnd().subscribe({
-        next: (result) => {
-          onSpeechEndSynthesizerSubscription.unsubscribe();
-          this.restartSpeechRecognition();
-          return;
-        }
-      });
-
-      // define what shall happen when an error occured at the synthesizer
-      let onSpeechErrorSynthesizerSubscription = this.speechSynthesisService.onErrorEvent().subscribe({
-        next: (result) => {
-          onSpeechErrorSynthesizerSubscription.unsubscribe();
-          this.displayMessage(result.data + "Das Symptom wurde ihrem Pfad hinzugefügt.");
-          this.restartSpeechRecognition();
-          return;
-        }
-      });
-
-      // inform the user about what just happended
-      this.speechSynthesisService.speakUtterance("Das Symptom wurde in ihren Pfad hinzugefügt.");
-    }
-
-    /**
-     * Reinitializes the speech recognition service, the component behaviour and starts the recognition.
-     */
-    private restartSpeechRecognition() {
-
-      console.log("Restarting speech recognition");
-      this.unsubscribeFromAllSubscriptions();
-      this.speechRecognitionService.stopRecognition();
-
-      this.speechRecognitionService.initRecognition();
-      this.setupSpeechRecognitionBehaviour();
-      this.speechRecognitionService.startRecognition();
-
-    }
-
-    /**
-     * A type checker for checking whether a givne object is of type {@link PathwayEvent}.
-     * 
-     * @param objectToCheck that object that might be a {@link PathwayEvent}
-     * 
-     * @returns true if the type check succeeds, else false
-     */
-    private isPathwayEvent(objectToCheck:any): boolean {
-
-      if (objectToCheck?.date && objectToCheck?.header && objectToCheck?.content) {
-        return true;
+      } else {
+      // restart to listen for voice commands
+      this.restartSpeechRecognition();
       }
-      return false;
+    });
+  }
 
+  /**
+   * Gets called when the user wants to add a new symptom to his pathway. 
+   * 
+   * @param symptom the symptom that is new
+   */
+  private addNewSymptom(symptom: string): void {
+
+    this.speechRecognitionService.stopRecognition();
+    this.isListening = false;
+    this.unsubscribeFromAllSpeechRecognitionSubscriptions();
+
+    let userMessage = "Das Symptom wurde Ihrem Pfad hinzugefügt."
+
+    console.log("user wants to add a new symptom: " + symptom);
+
+    let event: PathwayEvent = {
+      content: [symptom],
+      header: "Symptome",
+      date: new Date(),
+      type: PathwayEventType.SYMPTOM_BUNDLE
+    };
+
+    this.newPathwayEventCreated.emit(event);
+
+    // define what shall happen when the system has spoken to the user
+    let onSpeechEndSynthesizerSubscription = this.speechSynthesisService.onSpeechEnd().subscribe({
+      next: (result) => {
+
+        onSpeechEndSynthesizerSubscription.unsubscribe();
+        this.restartSpeechRecognition();
+      }
+    });
+
+    // define what shall happen when an error occured at the synthesizer
+    let onSpeechErrorSynthesizerSubscription = this.speechSynthesisService.onErrorEvent().subscribe({
+      next: (result) => {
+
+        onSpeechErrorSynthesizerSubscription.unsubscribe();
+        this.displayMessage(result.data + userMessage);
+        this.restartSpeechRecognition();
+      }
+    });
+
+    // inform the user about what just happended
+    this.speechSynthesisService.speakUtterance(userMessage);
+  }
+
+  /**
+   * Reinitializes the speech recognition service, the component behaviour and starts the recognition.
+   */
+  private restartSpeechRecognition() {
+
+    console.log("Restarting speech recognition");
+    this.unsubscribeFromAllSpeechRecognitionSubscriptions();
+    this.speechRecognitionService.stopRecognition();
+
+    this.speechRecognitionService.initRecognition();
+    this.setupSpeechRecognitionBehaviour();
+    this.speechRecognitionService.startRecognition();
+
+  }
+
+  /**
+   * A type checker for checking whether a given object is of type {@link PathwayEvent}.
+   * 
+   * @param objectToCheck that object that might be a {@link PathwayEvent}
+   * 
+   * @returns true if the type check succeeds, else false
+   */
+  private isPathwayEvent(objectToCheck:any): boolean {
+
+    if (objectToCheck?.date && objectToCheck?.header && objectToCheck?.content) {
+      return true;
     }
+    return false;
+
+  }
+
+  /**
+   * Takes in a transcript and checks it for the header and the date of a possibly existing {@link PathwayEvent}.
+   * 
+   * @param recognitionTranscript the transcript from the speech recognition to analyze
+   */
+  private getDesiredPathewayEventFromRecognitionTranscript(recognitionTranscript: string): PathwayEvent | null {
+
+    // get the first whitespace, which indicates where the event name starts
+    let firstWhitespaceStringPosition = recognitionTranscript.indexOf(" ");
+
+    // get the 'am' keyword position in the transcript string
+    let keywordStringPosition = recognitionTranscript.lastIndexOf("am");
+
+    // calculate the position where the event name should be in the transcipt
+    let eventNameStringStartPosition = firstWhitespaceStringPosition + 1;
+    let eventNameLength = keywordStringPosition - 1 - firstWhitespaceStringPosition;
+
+    // get the name of the event from the transcript
+    let eventName: string = recognitionTranscript.substr(eventNameStringStartPosition, eventNameLength).trim();
+
+    // get the date that was mentioned
+    let dateStringPosition = keywordStringPosition + "am".length + 1;
+    let eventDate: Date = new Date(recognitionTranscript.substring(dateStringPosition));
+
+    if (eventName && eventDate) {
+      return {
+        header: eventName,
+        date: eventDate
+      }
+    } else {
+      return null;
+    }
+  }
 
 }

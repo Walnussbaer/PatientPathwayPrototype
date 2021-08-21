@@ -1,27 +1,21 @@
 <div id="pathwayControl">
 
     <h1 id="controlCaption">Mein Patientenpfad</h1>
-    <!--this is the control panel for working with the patient pathway-->
 
-    <button mat-raised-button color="primary" *ngIf="speechRecognitionAvailable && !pathIsListening" (click)="onActivateVoiceControl()">
+    <button mat-raised-button color="primary" *ngIf="speechRecognitionAvailable && !isListening" (click)="onActivateVoiceControl()">
         <fa-icon id="voiceControlIndicatorIcon" [icon]="voiceControlIcon"></fa-icon>
     </button>
 
-    <button id="voiceControlRunningButton" mat-raised-button color="primary" *ngIf="speechRecognitionAvailable && pathIsListening" (click)="onDeactivateVoiceControl()">
+    <button id="voiceControlRunningButton" mat-raised-button color="primary" *ngIf="speechRecognitionAvailable && isListening" (click)="onDeactivateVoiceControl()">
         <fa-icon id="voiceControlIndicatorIcon" [icon]="voiceControlIcon"></fa-icon>
     </button>
 
-    <p *ngIf="pathIsListening" id="controlDescription">Für eine Übersicht über die Sprachbefehle, sagen Sie "Hilfe".</p>
+    <p *ngIf="isListening" id="controlDescription">Für eine Übersicht über die Sprachbefehle, sagen Sie "Hilfe".</p>
 
     <select (change)="onVoiceChanged($event)" name="voices" id="voice-select">
 
         <option *ngFor="let voice of availableVoices" [value]="voice.voiceURI">{{voice.name}}</option>
 
     </select>
-
-    <!--<button mat-raised-button color="accent" (click)="openHelpDialog()">Sprachbefehle anzeigen</button>-->
-
-    <!--<button mat-raised-button color="accent" (click)="explainPathwayControls()">Erklär mir meinen Pfad</button>-->
- 
 
 </div>
