@@ -12,57 +12,87 @@ import { PathwayEvent } from 'src/app/modules/pathway/model/PathwayEvent';
 })
 export class PathwayService {
 
+  /** The url of the test data json file. */
   private testDataUrl: string = "/assets/data/PathwayEntries.json";
 
-  /**
-   * The subject that manages the context of users wanting to see the details of a pathway event. 
-   */
-  private openDetailsRequest: Subject<PathwayEvent> = new Subject();
+  /** The subject that manages the context of users wanting to see the details of a pathway event. */
+  private expandPathwayEventRequest: Subject<PathwayEvent> = new Subject();
 
-  /**
-   * The subject that manages the context when the pathway actually opened the details of a pathway event. 
-   */
-  private pathwayEventOpened: Subject<PathwayEvent> = new Subject();
+  /** The subject that manages the context of users requesting to delete a pathway event. */
+  private deletePathwayEventRequest: Subject<boolean> = new Subject();
 
-    /**
-   * The subject that manages the context when a pathway event that is not availabe shall be handeled by the pathway (e.g the user wants to open a potential pathway event, which is not exiting)
-   */
+  /** The subject that manages the context when the pathway actually opened the details of a pathway event. */
+  private pathwayEventExpanded: Subject<PathwayEvent> = new Subject();
+
+  /** The subject that manages the context when a pathway event that is not availabe shall be handeled by the pathway (e.g the user wants to open a potential pathway event, which is not exiting). */
   private pathwayEventNotAvailable: Subject<PathwayEvent> = new Subject();
-
-  /**
-   * The subject that manages the context of users requesting to delete an event. 
-   */
-  private delteOperationRequest: Subject<boolean> = new Subject();
-
 
   constructor(private httpClient: HttpClient) { }
 
   /**
-   * Returns an observable that can be subscribed to to define what shall happen when the user want's to open an existing pathway event.
+   * Returns an observable that can be subscribed to to define what shall happen when the user requested to open an existing pathway event.
    *  
    * @returns the Observable to subscribe to
    */
-  public onNewPathwayEventOpeningClaim(): Observable<PathwayEvent> {
+  public onNewPathwayEventExpandRequest(): Observable<PathwayEvent> {
 
-    return this.openDetailsRequest;
+    return this.expandPathwayEventRequest;
 
   }
 
-    /**
-   * Returns an observable that can be subscribed to to define what shall happen when the pathway tries to open a specific pathway event. 
+  /**
+   * Emits the event that the user requested to see the details of an event, identified by date an name. 
+   * 
+   * @param eventName the name of the event that shall be opened
+   */
+  public emitNewPathwayEventExpandRequestEvent(event: PathwayEvent): void {
+
+    this.expandPathwayEventRequest.next(event);
+
+  }
+
+  /**
+   * Returns an observable that can be subscribed to to define what shall happen when the pathway actually expanded/ openend a specific pathway event. 
    *  
    * @returns the Observable to subscribe to
    */
-  public onPathwayEventOpened(): Observable<PathwayEvent> {
+  public onPathwayEventExpanded(): Observable<PathwayEvent> {
 
-    return this.pathwayEventOpened;
+    return this.pathwayEventExpanded;
 
   }
 
+  /**
+   * Emits the event that the pathway expanded/ openened the details of a pathway event. 
+   * 
+   * @param event the event that was expanded
+   */
+  public emitNewPathwayEventExpandedEvent(event: PathwayEvent): void {
+
+    this.pathwayEventExpanded.next(event);
+  
+  }
+
+  /**
+   * Returns an observable that can be subscribed to to define what shall happen when the pathway could not find a specific event called out for by the user. 
+   * 
+   * @returns the Observable to subscribe to
+   */
   public onPathwayEventNotAvailable(): Observable<PathwayEvent> {
 
     return this.pathwayEventNotAvailable;
 
+  }
+
+  /**
+   * Emits the event that the pathway tries to open the details of an event. 
+   * 
+   * @param event the event that is to be opened
+   */
+  public emitNewPathwayEventNotAvailableEvent(event: PathwayEvent): void {
+
+    this.pathwayEventNotAvailable.next(event);
+  
   }
 
   /**
@@ -72,51 +102,18 @@ export class PathwayService {
    */
   public onPathwayEventDeleted(): Observable<boolean> {
 
-    return this.delteOperationRequest;
-
-  }
-
-  /**
-   * Emits the event that the user requested to see the details of an event, identified by date an name. 
-   * 
-   * @param eventName the name of the event that shall be opened
-   */
-  public emitNewOpenPathwayEvent(event: PathwayEvent) {
-
-    this.openDetailsRequest.next(event);
-
-  }
-
-  /**
-   * Emits the event that the pathway tries to open the details of an event. 
-   * 
-   * @param event the event that is to be opened
-   */
-  public emitNewPathwayEventOpenEvent(event: PathwayEvent) {
-
-    this.pathwayEventOpened.next(event);
-
-  }
-
-  /**
-   * Emits the event that the pathway tries to open the details of an event. 
-   * 
-   * @param event the event that is to be opened
-   */
-  public emitNewPathwayEventNotAvailableEvent(event: PathwayEvent) {
-
-    this.pathwayEventNotAvailable.next(event);
+    return this.deletePathwayEventRequest;
 
   }
 
   /**
    * Emits the event that a pathway event got deleted. 
    * 
-   * @param eventName whether the delete operation could be executed or not
+   * @param operationResult whether the delete operation could be executed or not
    */
-  public answerPathwayDeleteRequest(operationResult: boolean) {
+  public emitNewPathwayEventDeletedEvent(operationResult: boolean): void {
 
-    this.delteOperationRequest.next(operationResult);
+    this.deletePathwayEventRequest.next(operationResult);
 
   }
 

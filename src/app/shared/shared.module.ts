@@ -29,7 +29,6 @@ import {MatSelectModule} from '@angular/material/select';
     MatDialogModule,
     MatSelectModule,
     FontAwesomeModule
-    
   ]
 })
 export class SharedModule { }

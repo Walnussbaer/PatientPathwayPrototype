@@ -37,7 +37,7 @@ export class PatientPathwayComponent implements OnInit,OnChanges {
   ngOnInit(): void {
 
     // subscribe to pathway open events using shared service 
-    this.pathwayService.onNewPathwayEventOpeningClaim().subscribe({
+    this.pathwayService.onNewPathwayEventExpandRequest().subscribe({
       next: (event:PathwayEvent) => {
         console.log("pathway component is ordered to open event with name " + event.header + " on date " + event.date?.toLocaleDateString('de-DE'));
         this.expandPathwayEventHeader(event);
@@ -69,7 +69,7 @@ export class PatientPathwayComponent implements OnInit,OnChanges {
     // if element exists, open it using a simlulated mouse klick
     if (containerToOpen) {
       containerToOpen.click();
-      this.pathwayService.emitNewPathwayEventOpenEvent(pathwayEvent);
+      this.pathwayService.emitNewPathwayEventExpandedEvent(pathwayEvent);
     } else {
 
       // if the desired event has no UI representation, we want to inform other components

@@ -88,7 +88,7 @@ export class PatientPathwayViewComponent implements OnInit {
    */
   public onUserWantsToOpenPathwayEvent(event: PathwayEvent): void {
 
-    this.pathwayService.emitNewOpenPathwayEvent(event);
+    this.pathwayService.emitNewPathwayEventExpandRequestEvent(event);
 
   }
 
@@ -129,9 +129,9 @@ export class PatientPathwayViewComponent implements OnInit {
       });
 
       // tell the shared service what just happended
-      this.pathwayService.answerPathwayDeleteRequest(true);
+      this.pathwayService.emitNewPathwayEventDeletedEvent(true);
     } else {
-      this.pathwayService.answerPathwayDeleteRequest(false);
+      this.pathwayService.emitNewPathwayEventDeletedEvent(false);
     }
   }
 
