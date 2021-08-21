@@ -15,51 +15,70 @@ import { PathwayEventType } from '../../../model/PathwayEventType';
   templateUrl: './patient-pathway-appointment-creator.component.html',
   styleUrls: ['./patient-pathway-appointment-creator.component.css']
 })
-export class PathwayAppointmentCreatorComponent implements OnInit {
+export class PatientPathwayAppointmentCreatorComponent implements OnInit {
 
+  /** Indicates whether the user is allowed to start the creation process. */
   public userCanStartCreationProcess: boolean = false;
 
+  /** The date of the appointment that shall be created. */
   public appointmentDate?: Date;
 
-  public appointmentCaption?: string;
+  /** The header of the appointment that shall be created.  */
+  public appointmentHeader?: string;
 
+  /** The content of the header that shall be created.  */
   public appointmentContent?: string;
 
+  /** Indicates whether the last voice input was valid concerning the appointment creation. */
   public isLastVoiceInputValid: boolean = true;
 
-  public currentStepInAppointmentCreation = 0;
+  /** The current step in the appointment creation process. */
+  public currentStepInAppointmentCreation: number = 0;
 
+  /** The new appointment that is being created. */
   public newPathwayEvent: PathwayEvent = {};
 
+  /** Indicates whether the program is recording voice input for the appointment. */
   public recordingFormInput: boolean = false;
 
+  /** Indicates whether the creator is recording voice input for the next user command. */
   public listeningForControlCommmand: boolean = false;
 
+  /** The css class for the icon that indicates whether the creator is currently waiting for a user command. */
   public controlIndicatorIconClass: string = "not-waiting-for-command";
 
+  /** The icon definition for the icon which is indicating whether the creator is currently waiting for a user command. */
   public voiceControlIcon: IconDefinition = faMicrophone;
 
+  /** Indicates whether the creator is currently speaking with the user. */
   public speaking: boolean = false;
 
+  /** The css class for the content area of the creator. */
   public creatorContentClass: string = "is-not-recording";
 
+  /** An array holding all subscriptions which belong the appointment creation process. */
   private currentFormSubscriptions: Array<Subscription> = [];
 
+  /** An array holding all subscriptions which belong to the process of handling voice commands from the user. */
   private currentControlSubscriptions: Array<Subscription> = [];
 
+  /** The utterance for the date of the appointment. */
   public dateQuestion: string = "Wann ist der Termin?";
 
-  public captionQuestion: string ="Welchen Namen soll der Termin erhalten?";
+  /** The utterance for the header of the appointment. */
+  public headerQuestion: string ="Welchen Namen soll der Termin erhalten?";
 
+  /** The utterance for the content of the appointment. */
   public contentQuestion: string = "Sie können nun noch eine Beschreibung dem Termin hinzufügen.";
 
+  /** The utterance to welcome the user. */
   public welcomeUtterance: string = "Herzliche Willkommen zur sprachgeführten Anlegung eines neuen Termins.";
 
   constructor(
     private speechRecognitionService: SpeechRecognitionService, 
     private speechSynthesisService: SpeechSynthesisService,
     private matSnackbarService: MatSnackBar,
-    public dialogRef: MatDialogRef<PathwayAppointmentCreatorComponent>,
+    public dialogRef: MatDialogRef<PatientPathwayAppointmentCreatorComponent>,
     ) {
       this.dialogRef.disableClose = true;
      }
@@ -97,15 +116,15 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
         this.closeDialogWithoutResult();
       }
     });
+
     // start the creation of creating a new appointment
     this.startCreationProcess();
-  
   }
 
   /**
    * Closes the dialog and does not pass a result to the containing parent component. 
    */
-  public closeDialogWithoutResult() {
+  public closeDialogWithoutResult(): void {
 
     this.dialogRef.close(null);
 
@@ -114,22 +133,22 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
   /**
    * Construct the new appointment, pass it to the parent component and close the dialog.
    */
-     public closeDialogWithResult(): void {
+  public closeDialogWithResult(): void {
 
-      this.newPathwayEvent = {
-        date: this.appointmentDate,
-        header: this.appointmentCaption,
-        content: this.appointmentContent,
-        type: PathwayEventType.APPOINTMENT
-      }
-  
-      this.dialogRef.close(this.newPathwayEvent);
+    this.newPathwayEvent = {
+      date: this.appointmentDate,
+      header: this.appointmentHeader,
+      content: this.appointmentContent,
+      type: PathwayEventType.APPOINTMENT
     }
+
+    this.dialogRef.close(this.newPathwayEvent);
+  }
 
   /**
    * Starts the ping pong between speech synthesizer and user. 
    */
-  public startCreationProcess() {
+  public startCreationProcess(): void {
 
     this.currentStepInAppointmentCreation = 0;
     this.userCanStartCreationProcess = false;
@@ -140,8 +159,8 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
     let synthesizerSubscription = this.speechSynthesisService.onSpeechEnd().subscribe({
       next: () => {
 
-        this.userCanStartCreationProcess = true;
         synthesizerSubscription.unsubscribe(); //clean up
+        this.userCanStartCreationProcess = true;
         this.listenForNextControlInput(this.getDateInput)
       }
     });
@@ -181,7 +200,6 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
 
           this.displayErrorMessage(errorMessage);
 
-          // we need to make a new subscription, because the observable from the first subscription completes
           let synthesizerSubscription = this.speechSynthesisService.onSpeechEnd().subscribe({
             next: () => {
 
@@ -207,7 +225,7 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
   }
 
   /**
-   * Start the process for getting the caption of the new appointment. 
+   * Start the process for getting the header of the new appointment. 
    */
   public getHeaderInput(): void {
 
@@ -224,21 +242,19 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
     });
 
     this.currentFormSubscriptions!.push(this.speechRecognitionService.onSpeechRecognitionResultAvailable().subscribe({
-
       next: (message: WebSpeechRecognitionMessage) => {
 
         this.speechRecognitionService.stopRecognition();
 
-        this.appointmentCaption = message.data as string;
+        this.appointmentHeader = message.data as string;
         this.isLastVoiceInputValid = true;
 
         this.listenForNextControlInput(this.getContentInput,this.getDateInput,this.getHeaderInput);
-
       }
     }));
 
-    // ask for the caption of the new appointment
-    this.speechSynthesisService.speakUtterance(this.captionQuestion);
+    // ask for the header of the new appointment
+    this.speechSynthesisService.speakUtterance(this.headerQuestion);
   }
 
   /**
@@ -249,17 +265,16 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
     this.isLastVoiceInputValid = false;
     this.currentStepInAppointmentCreation = 3;
 
+    // we want to start the recognition after the question was asked by the synthesizer
     let synthesizerSubscription = this.speechSynthesisService.onSpeechEnd().subscribe({
       next: (result) => {
 
-        // we want to start the recognition after the question was asked by the synthesizer
         synthesizerSubscription.unsubscribe();
         this.listenForNextFormInput();
       }
     });
 
     this.currentFormSubscriptions!.push(this.speechRecognitionService.onSpeechRecognitionResultAvailable().subscribe({
-
       next: (message: WebSpeechRecognitionMessage) => {
 
         this.speechRecognitionService.stopRecognition();
@@ -268,7 +283,6 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
         this.isLastVoiceInputValid = true;
 
         this.listenForNextControlInput(this.closeDialogWithResult,this.getHeaderInput,this.getContentInput);
-
       }
     }));
 
@@ -283,8 +297,8 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
     this.speechRecognitionService.stopRecognition();
 
     this.setupFormInputBehaviour();
-    this.speechRecognitionService.startRecognition();
 
+    this.speechRecognitionService.startRecognition();
   }
 
   /**
@@ -329,11 +343,11 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
         // cancel the creation should always be possible
         if (recognitionResult == "dialog schließen") {
 
-          console.log("closing appointment creation dialog");
+          console.log("canceling appointment creation")
           this.closeDialogWithoutResult();
         }
 
-        // in case the just started the appointment creation, we can only start the creation process
+        // in case we just started the appointment creation, we can only start the creation process
         else if (recognitionResult == "start" && this.currentStepInAppointmentCreation==0){
 
           console.log("starting creation process");
@@ -391,7 +405,6 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
         this.listenForNextControlInput(nextStep,previousStep,currentStep);
         this.controlIndicatorIconClass = "waiting-for-command";
         this.listeningForControlCommmand = true;
-
       }
     }));
 
@@ -401,7 +414,6 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
         this.listenForNextControlInput(nextStep,previousStep,currentStep);
         this.controlIndicatorIconClass = "waiting-for-command";
         this.listeningForControlCommmand = true;
-
       }
     }));
   }
@@ -446,34 +458,34 @@ export class PathwayAppointmentCreatorComponent implements OnInit {
   /**
    * Clear all subscriptions for working with form inputs from the user. 
    */
-     private clearFormInputSubscriptions(): void {
+  private clearFormInputSubscriptions(): void {
 
-      this.currentFormSubscriptions.forEach(subscription => {
-        subscription.unsubscribe();
-      })
-    }
+    this.currentFormSubscriptions.forEach(subscription => {
+      subscription.unsubscribe();
+    })
+  }
   
-    /**
-     * Clear all subscriptions for working with control inputs from the user. 
-     */
-    private clearCommandInputSubscriptions(): void {
-  
-      this.currentControlSubscriptions.forEach(subscription => {
-        subscription.unsubscribe();
-      })
-    }
+  /**
+   * Clear all subscriptions for working with control inputs from the user. 
+   */
+  private clearCommandInputSubscriptions(): void {
 
-    /**
-     * Convenience method for displaying error messages using the Angular Material Design Snackbar. 
-     * 
-     * @param errorMessage the error message to display
-     */
-    private displayErrorMessage(errorMessage: string): void {
+    this.currentControlSubscriptions.forEach(subscription => {
+      subscription.unsubscribe();
+    })
+  }
 
-      this.matSnackbarService.open(errorMessage,"Okay",{
-        panelClass: "warning-mat-snackbar",
-        duration: 4000,
-      })
-    }
+  /**
+   * Convenience method for displaying error messages using the Angular Material Design Snackbar. 
+   * 
+   * @param errorMessage the error message to display
+   */
+  private displayErrorMessage(errorMessage: string): void {
+
+    this.matSnackbarService.open(errorMessage,"Okay",{
+      panelClass: "warning-mat-snackbar",
+      duration: 4000,
+    });
+  }
 }
 

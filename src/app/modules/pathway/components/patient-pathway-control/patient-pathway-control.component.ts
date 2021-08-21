@@ -10,7 +10,7 @@ import { WebSpeechRecognitionMessage } from 'src/app/shared/services/speech/WebS
 import { WebSpeechSynthesisMessage } from 'src/app/shared/services/speech/WebSpeechSynthesisMessage';
 import { PathwayEvent } from '../../model/PathwayEvent';
 import { PathwayEventType } from '../../model/PathwayEventType';
-import { PathwayAppointmentCreatorComponent } from '../creators/patient-pathway-appointment-creator/patient-pathway-appointment-creator.component';
+import { PatientPathwayAppointmentCreatorComponent } from '../creators/patient-pathway-appointment-creator/patient-pathway-appointment-creator.component';
 import { PatientPathwayControlHelpDialogComponent } from '../patient-pathway-control-help-dialog/patient-pathway-control-help-dialog.component';
 
 /**
@@ -420,7 +420,7 @@ export class PatientPathwayControlComponent implements OnInit {
     this.isListening = false;
     this.unsubscribeFromAllSpeechRecognitionSubscriptions();
 
-    const pathwayAppointmentCreatorDialog = this.dialog.open(PathwayAppointmentCreatorComponent);
+    const pathwayAppointmentCreatorDialog = this.dialog.open(PatientPathwayAppointmentCreatorComponent);
 
     // define what shall happen after the pathway event creator component dialog is closed
     pathwayAppointmentCreatorDialog.afterClosed().subscribe((result: PathwayEvent | WebSpeechSynthesisMessage) => {

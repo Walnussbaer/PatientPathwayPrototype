@@ -1,20 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { PathwayAppointmentCreatorComponent } from './patient-pathway-appointment-creator.component';
+import { PatientPathwayAppointmentCreatorComponent } from './patient-pathway-appointment-creator.component';
 
 describe('PatientPathwayAppointmentCreatorComponent', () => {
-  let component: PathwayAppointmentCreatorComponent;
-  let fixture: ComponentFixture<PathwayAppointmentCreatorComponent>;
+  let component: PatientPathwayAppointmentCreatorComponent;
+  let fixture: ComponentFixture<PatientPathwayAppointmentCreatorComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ PathwayAppointmentCreatorComponent ]
+      declarations: [ PatientPathwayAppointmentCreatorComponent ]
     })
     .compileComponents();
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(PathwayAppointmentCreatorComponent);
+    fixture = TestBed.createComponent(PatientPathwayAppointmentCreatorComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
