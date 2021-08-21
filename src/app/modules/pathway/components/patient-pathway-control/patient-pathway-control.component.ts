@@ -10,7 +10,7 @@ import { WebSpeechRecognitionMessage } from 'src/app/shared/services/speech/WebS
 import { WebSpeechSynthesisMessage } from 'src/app/shared/services/speech/WebSpeechSynthesisMessage';
 import { PathwayEvent } from '../../model/PathwayEvent';
 import { PathwayEventType } from '../../model/PathwayEventType';
-import { PathwayAppointmentCreatorComponent } from '../creators/pathway-appointment-creator/pathway-appointment-creator.component';
+import { PathwayAppointmentCreatorComponent } from '../creators/patient-pathway-appointment-creator/patient-pathway-appointment-creator.component';
 import { PatientPathwayControlHelpDialogComponent } from '../patient-pathway-control-help-dialog/patient-pathway-control-help-dialog.component';
 
 /**

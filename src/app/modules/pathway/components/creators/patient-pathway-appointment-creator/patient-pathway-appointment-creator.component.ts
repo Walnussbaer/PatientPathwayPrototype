@@ -1,22 +1,19 @@
-import { Component, Inject, OnInit } from '@angular/core';
-import { concat, Observable, of, Subscription } from 'rxjs';
+import { Component, OnInit } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { SpeechRecognitionService } from 'src/app/shared/services/speech/speech-recognition.service';
 import { WebSpeechRecognitionMessage } from 'src/app/shared/services/speech/WebSpeechRecognitionMessage';
 import { PathwayEvent } from '../../../model/PathwayEvent';
-import { concatMap, delay, mergeMap } from 'rxjs/operators';
-import { WebSpeechRecognitionMessageType } from 'src/app/shared/services/speech/WebSpeechRecognitionMessageType';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialogRef } from '@angular/material/dialog';
 import { SpeechSynthesisService } from 'src/app/shared/services/speech/speech-synthesis.service';
 import { faMicrophone, IconDefinition } from '@fortawesome/free-solid-svg-icons';
 import { WebSpeechSynthesisMessage } from 'src/app/shared/services/speech/WebSpeechSynthesisMessage';
-import { faThemeisle } from '@fortawesome/free-brands-svg-icons';
 import { PathwayEventType } from '../../../model/PathwayEventType';
 
 @Component({
-  selector: 'app-pathway-appointment-creator',
-  templateUrl: './pathway-appointment-creator.component.html',
-  styleUrls: ['./pathway-appointment-creator.component.css']
+  selector: 'patient-pathway-appointment-creator',
+  templateUrl: './patient-pathway-appointment-creator.component.html',
+  styleUrls: ['./patient-pathway-appointment-creator.component.css']
 })
 export class PathwayAppointmentCreatorComponent implements OnInit {
 

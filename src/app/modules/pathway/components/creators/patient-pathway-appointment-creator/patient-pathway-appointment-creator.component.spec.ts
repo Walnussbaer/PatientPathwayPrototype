@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { PathwayAppointmentCreatorComponent } from './pathway-appointment-creator.component';
+import { PathwayAppointmentCreatorComponent } from './patient-pathway-appointment-creator.component';
 
-describe('PathwayAppointmentCreatorComponent', () => {
+describe('PatientPathwayAppointmentCreatorComponent', () => {
   let component: PathwayAppointmentCreatorComponent;
   let fixture: ComponentFixture<PathwayAppointmentCreatorComponent>;
 
