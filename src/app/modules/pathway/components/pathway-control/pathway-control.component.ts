@@ -11,7 +11,7 @@ import { WebSpeechSynthesisMessage } from 'src/app/shared/services/speech/WebSpe
 import { PathwayEvent } from '../../model/PathwayEvent';
 import { PathwayEventType } from '../../model/PathwayEventType';
 import { PathwayAppointmentCreatorComponent } from '../creators/pathway-appointment-creator/pathway-appointment-creator.component';
-import { PathwayControlHelpDialogComponent } from '../pathway-control-help-dialog/pathway-control-help-dialog.component';
+import { PatientPathwayControlHelpDialogComponent } from '../patient-pathway-control-help-dialog/patient-pathway-control-help-dialog.component';
 
 @Component({
   selector: 'pathway-control',
@@ -199,7 +199,7 @@ export class PathwayControlComponent implements OnInit {
   public openHelpDialog(): void {
 
     const helpDialogRef = this.dialog.open(
-      PathwayControlHelpDialogComponent,
+      PatientPathwayControlHelpDialogComponent,
       {
         width: "60%",
       }

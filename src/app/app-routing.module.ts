@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { PatientPathwayViewComponent } from './modules/pathway/components/pathway-view/patient-pathway-view.component';
+import { PatientPathwayViewComponent } from './modules/pathway/components/patient-pathway-view/patient-pathway-view.component';
 import { PatientPathwayComponent } from './modules/pathway/components/patient-pathway/patient-pathway.component';
 
 const routes: Routes = [
