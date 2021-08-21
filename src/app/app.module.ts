@@ -8,7 +8,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { PathwayModule } from './modules/pathway/pathway.module';
+import { PatientPathwayModule } from './modules/pathway/pathway.module';
 import { SharedModule } from './shared/shared.module';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
@@ -21,7 +21,7 @@ registerLocaleData(localeDe, 'de-DE', localeDeExtra);
   imports: [
     BrowserModule,
     AppRoutingModule,
-    PathwayModule,
+    PatientPathwayModule,
     BrowserAnimationsModule,
     HttpClientModule,
     SharedModule,

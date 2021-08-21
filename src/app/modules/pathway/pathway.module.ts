@@ -28,4 +28,4 @@ import { PatientPathwayContentComponent } from './components/patient-pathway-con
     SharedModule
   ]
 })
-export class PathwayModule { }
+export class PatientPathwayModule { }
