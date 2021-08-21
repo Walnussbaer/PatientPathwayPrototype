@@ -13,10 +13,19 @@ import { PathwayEventType } from '../../model/PathwayEventType';
 })
 export class PatientPathwayHeaderComponent implements OnInit {
 
+  /**
+   * The type of the event that the header describes. 
+   */
   @Input() eventType?: PathwayEventType;
 
+  /**
+   * The textual content of the header of the {@link PathwayEvent}. 
+   */
   @Input() eventHeader?: string;
 
+  /**
+   * The icon that is used in the component, depending on the event type. 
+   */
   public icon!: IconDefinition;
 
   constructor() { }
