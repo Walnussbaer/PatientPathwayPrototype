@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output, ViewEncapsulation } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { faMicrophone, IconDefinition } from '@fortawesome/free-solid-svg-icons';
@@ -14,11 +14,11 @@ import { PathwayAppointmentCreatorComponent } from '../creators/pathway-appointm
 import { PatientPathwayControlHelpDialogComponent } from '../patient-pathway-control-help-dialog/patient-pathway-control-help-dialog.component';
 
 @Component({
-  selector: 'pathway-control',
-  templateUrl: './pathway-control.component.html',
-  styleUrls: ['./pathway-control.component.css'],
+  selector: 'patient-pathway-control',
+  templateUrl: './patient-pathway-control.component.html',
+  styleUrls: ['./patient-pathway-control.component.css'],
 })
-export class PathwayControlComponent implements OnInit {
+export class PatientPathwayControlComponent implements OnInit {
 
   /**
    * This event emitter emits an event when a new pathway event got created by the user. 
