@@ -11,8 +11,14 @@ import { PathwayEventType } from '../../model/PathwayEventType';
 })
 export class PatientPathwayContentComponent implements OnInit {
 
+  /**
+   * The type of the event that the content describes. 
+   */
   @Input() eventType?: PathwayEventType;
 
+  /**
+   * The content of the of the {@link PathwayEvent}. 
+   */
   @Input() eventContent?: any;
 
   constructor() { }

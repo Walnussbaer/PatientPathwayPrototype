@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { PathwayEvent } from 'src/app/modules/pathway/model/PathwayEvent';
 
 /**
@@ -126,7 +127,15 @@ export class PathwayService {
    */
   public getPathwayEntries(): Observable<PathwayEvent[]> {
 
-    return this.httpClient.get<PathwayEvent[]>(this.testDataUrl);
+    return this.httpClient.get<PathwayEvent[]>(this.testDataUrl).pipe(
+      map((pathwayEvents) => {
+        // convert date field to real JS date, so we have less problems later
+        pathwayEvents.forEach((event => {
+          event.date = new Date(event.date!);
+        }));
+        return pathwayEvents;
+      })
+    );
 
   }
 }

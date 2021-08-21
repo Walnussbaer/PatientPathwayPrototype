@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { PathwayViewComponent } from './modules/pathway/components/pathway-view/pathway-view.component';
+import { PatientPathwayViewComponent } from './modules/pathway/components/pathway-view/patient-pathway-view.component';
 import { PatientPathwayComponent } from './modules/pathway/components/patient-pathway/patient-pathway.component';
 
 const routes: Routes = [
@@ -8,20 +8,20 @@ const routes: Routes = [
   // pathway view for patient
   {
     path: "myPath",
-    component: PathwayViewComponent
+    component: PatientPathwayViewComponent
   },
 
   // default route
   {
     path: '',
-    component: PathwayViewComponent,
+    component: PatientPathwayViewComponent,
     pathMatch: 'full'
   },
 
   // wildcard route
   {
     path: "**",
-    component: PathwayViewComponent
+    component: PatientPathwayViewComponent
   }
 
 ];

@@ -1,35 +1,32 @@
 import { Component, OnInit } from '@angular/core';
 import { PathwayService } from 'src/app/shared/services/pathway/pathway.service';
-import { SpeechSynthesisService } from 'src/app/shared/services/speech/speech-synthesis.service';
 import { PathwayEvent } from '../../model/PathwayEvent';
 import { PathwayEventType } from '../../model/PathwayEventType';
 
+/**
+ * A view that can be routed to. Handles all pathway related actions and passes data/ gets data from the pathway itself. 
+ */
 @Component({
-  selector: 'app-pathway-view',
-  templateUrl: './pathway-view.component.html',
-  styleUrls: ['./pathway-view.component.css']
+  selector: 'patient-pathway-view',
+  templateUrl: './patient-pathway-view.component.html',
+  styleUrls: ['./patient-pathway-view.component.css']
 })
-export class PathwayViewComponent implements OnInit {
+export class PatientPathwayViewComponent implements OnInit {
 
   /**
    * The events of the patient pathway that can be worked with in this view. 
    */
   public pathwayEvents: PathwayEvent[] = [];
 
-  constructor(private pathwayService: PathwayService, private speechSynthesisService: SpeechSynthesisService) { }
+  constructor(private pathwayService: PathwayService) { }
 
   ngOnInit(): void {
 
     // call the business layer and get available events of pathway
     this.pathwayService.getPathwayEntries().subscribe({
       next: (result) =>  { 
+
         this.pathwayEvents = result;
-
-        this.pathwayEvents.forEach((event:PathwayEvent) => {
-          // convert date field to real JS date
-          event.date = new Date(event.date!);
-        })
-
       },
 
       error: (error) => {
@@ -39,7 +36,7 @@ export class PathwayViewComponent implements OnInit {
   }
 
   /**
-   * Gets called when a new event got created, e.g. by the user. 
+   * Gets called when a new event got created, e.g. by the user using the appointment creator. 
    * 
    * @param newPahtwayEvent the new pathway event that got created
    */
@@ -50,7 +47,6 @@ export class PathwayViewComponent implements OnInit {
       case PathwayEventType.APPOINTMENT: {
 
         this.pathwayEvents.push(newPahtwayEvent);
-        this.sortPathwayEventsByDate();
         break;
 
       }
@@ -60,34 +56,31 @@ export class PathwayViewComponent implements OnInit {
         // check whether we already have some symptoms for the current date 
         let existingSymptomBundleForDate: PathwayEvent | undefined = this.pathwayEvents.find((event: PathwayEvent)=>{
 
-          let dateOfEventToCompare: Date = new Date(event.date!);
-          let dateOfNewPathwayEvent: Date = new Date(newPahtwayEvent.date!);
-
-          //(time does not matter)
+          //time does not matter
           if (
-            dateOfEventToCompare.getDay() == dateOfNewPathwayEvent.getDay() 
-            &&dateOfEventToCompare.getFullYear() == dateOfNewPathwayEvent.getFullYear()
-            && dateOfEventToCompare.getMonth() == dateOfNewPathwayEvent.getMonth()) {
-              return true
+            event.date!.getDay() == newPahtwayEvent.date!.getDay() 
+            &&event.date!.getFullYear() == newPahtwayEvent.date!.getFullYear()
+            && event.date!.getMonth() == newPahtwayEvent.date!.getMonth()) {
+              return true;
           }
           return false;
         });
 
+        // if we already have symptoms for the current date, expand the current symptom bundle, else we just created a new one
         if (existingSymptomBundleForDate) {
 
-          console.log("extend existing symptom bundle");
+          console.log("extending existing symptom bundle");
           existingSymptomBundleForDate.content.push(newPahtwayEvent.content[0]);
-          this.sortPathwayEventsByDate();
 
         } else {
 
-          console.log("create new symptom bundle");
+          console.log("created new symptom bundle for current date");
           this.pathwayEvents.push(newPahtwayEvent);
-          this.sortPathwayEventsByDate();
         }
       }
       break;
     }
+    this.sortPathwayEventsByDate();
   }
 
   /**
@@ -106,32 +99,36 @@ export class PathwayViewComponent implements OnInit {
    */
   public onUserWantsToDeletePathwayEvent(pathwayEvent: PathwayEvent): void {
 
+    // find the event that shall be deleted using header and date
     let eventToDelete: PathwayEvent | undefined = this.pathwayEvents.find((event: PathwayEvent) => {
 
       if (
         event.header!.toLocaleLowerCase() == pathwayEvent.header!.toLocaleLowerCase() && 
-        event.date!.getDay() == pathwayEvent.date!.getDay() 
-        &&event.date!.getFullYear() == pathwayEvent.date!.getFullYear()
-        && event.date!.getMonth() == pathwayEvent.date!.getMonth()) {
+        event.date!.getDay() == pathwayEvent.date!.getDay() &&
+        event.date!.getFullYear() == pathwayEvent.date!.getFullYear() &&
+        event.date!.getMonth() == pathwayEvent.date!.getMonth()) {
           return true
       }
       return false;
     });
 
+    // if the event is existing, we delete ist
     if (eventToDelete) {
 
+      // filter out the event that we want to delete
       this.pathwayEvents = this.pathwayEvents.filter((event: PathwayEvent) => {
 
         if (
           event.header!.toLocaleLowerCase() == eventToDelete!.header!.toLocaleLowerCase() && 
-          event.date!.getDay() == eventToDelete!.date!.getDay() 
-          &&event.date!.getFullYear() == eventToDelete!.date!.getFullYear()
-          && event.date!.getMonth() == eventToDelete!.date!.getMonth()) {
+          event.date!.getDay() == eventToDelete!.date!.getDay() &&
+          event.date!.getFullYear() == eventToDelete!.date!.getFullYear() &&
+          event.date!.getMonth() == eventToDelete!.date!.getMonth()) {
             return false
         }
         return true;
       });
 
+      // tell the shared service what just happended
       this.pathwayService.answerPathwayDeleteRequest(true);
     } else {
       this.pathwayService.answerPathwayDeleteRequest(false);
