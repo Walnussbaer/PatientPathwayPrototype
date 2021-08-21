@@ -1,8 +1,5 @@
-import { DOCUMENT } from '@angular/common';
-import { Component, Inject, Input, OnChanges, OnInit } from '@angular/core';
-import { MglTimelineEntryComponent } from 'angular-mgl-timeline/src/timeline/timeline-entry/timeline-entry.component';
+import { Component, Input, OnChanges, OnInit } from '@angular/core';
 import { PathwayService } from 'src/app/shared/services/pathway/pathway.service';
-import { SpeechSynthesisService } from 'src/app/shared/services/speech/speech-synthesis.service';
 import { PathwayEvent } from '../../model/PathwayEvent';
 
 /**
