@@ -24,20 +24,13 @@ declare var webkitSpeechGrammarList: any;
 })
 export class SpeechRecognitionService {
 
-  /**
-   * The instance that controls the speech recognition. 
-   *
-   */
+  /** The instance that controls the speech recognition.*/
   private speechRecognition!: SpeechRecognition;
 
-  /**
-   * Indicates whether the service is currently recognizing spoken voice. 
-   */
+  /** Indicates whether the service is currently recognizing spoken voice.*/
   private isRecognizing: boolean = false;
 
-  /**
-   * Contains the grammar for the speech recognition. Cannot be used because of missing browser support!
-   */
+  /** Contains the grammar for the speech recognition. Cannot be used because of missing browser support! */
   private speechGrammarList!: SpeechGrammarList;
 
   constructor() {}
@@ -96,7 +89,6 @@ export class SpeechRecognitionService {
 
       // return false in case we have no support for speech recognition in the browser of the user
       return false;
-
     }
   }
 
@@ -128,7 +120,7 @@ export class SpeechRecognitionService {
   }
 
   /**
-   * Returns an Observable that can be subscribed to. The observable returns a value when the speech recognition got a result ready for usage. 
+   * Returns an Observable that can be subscribed to. The observable emits a value when the speech recognition got a result ready for usage. 
    * 
    * @returns the Observable to subscribe to
    */
@@ -157,11 +149,10 @@ export class SpeechRecognitionService {
         }
     })
     })
-
   }
 
   /**
-   * Returns an Observable that can be subscribed to. The observable returns a value when the speech recognition has started the recognition. 
+   * Returns an Observable that can be subscribed to. The observable emits a value when the speech recognition has started the recognition. 
    * 
    * @returns the Observable to subscribe to
    */
@@ -180,13 +171,12 @@ export class SpeechRecognitionService {
         };
 
         subscriber.next(message);
-
       });
     })
   }
 
   /**
-   * Returns an Observable that can be subscribed to. The observable returns a value when the speech recognition has ended the recognition. 
+   * Returns an Observable that can be subscribed to. The observable emits a value when the speech recognition has ended the recognition. 
    * 
    * @returns the Observable to subscribe to
    */
@@ -205,13 +195,12 @@ export class SpeechRecognitionService {
         };
 
         subscriber.next(message);
-
       });
     })
   }
 
   /**
-   * Returns an Observable that can be subscribed to. The observable returns a value when an error occured during the running speech recognition.
+   * Returns an Observable that can be subscribed to. The observable emits a value when an error occured during the running speech recognition.
    * 
    * @returns the Observable to subscribe to
    */
@@ -291,7 +280,6 @@ export class SpeechRecognitionService {
         };
 
         subscriber.next(message);
-        
       });
     })
   }

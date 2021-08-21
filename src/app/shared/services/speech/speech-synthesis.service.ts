@@ -3,24 +3,21 @@ import { Observable } from 'rxjs';
 import { WebSpeechSynthesisMessage } from './WebSpeechSynthesisMessage';
 import { WebSpeechSynthesisMessageType } from './WebSpeechSynthesisMessageType';
 
+/**
+ * This service handles the synthesis of utterances. 
+ */
 @Injectable({
   providedIn: 'root'
 })
 export class SpeechSynthesisService {
 
-  /**
-   * Whether the service is currently speaking an utterance or not. 
-   */
+  /** Whether the service is currently speaking an utterance or not. */
   private isSpeaking: boolean = false;
 
-  /**
-   * The controller interface for the speech synthesis.
-   */
+  /** The controller interface for the speech synthesis. */
   private speechSynthesis!: SpeechSynthesis;
 
-  /**
-   * The utterance that shall be synthesized. 
-   */
+  /** The utterance that shall be synthesized. */
   private speechSynthesisUtterance!: SpeechSynthesisUtterance;
 
   constructor() { }
@@ -55,7 +52,7 @@ export class SpeechSynthesisService {
    * 
    * @param voice the voice to use
    */
-  public setVoice(voice: SpeechSynthesisVoice) {
+  public setVoice(voice: SpeechSynthesisVoice): void {
 
     this.speechSynthesisUtterance.voice = voice;
     
@@ -64,9 +61,9 @@ export class SpeechSynthesisService {
   /**
    * Gets a message as input, synthesizes this message and speaks it out loud.
    * 
-   * @param message the message to synthesize and say
+   * @param message the message to synthesize and speak out loud
    */
-  public speakUtterance(message: string):void {
+  public speakUtterance(message: string): void {
 
     if (!this.speechSynthesis) {
       console.warn("Speech synthesis service not initialized!");
@@ -79,7 +76,7 @@ export class SpeechSynthesisService {
   }
 
   /**
-   * Returns an Observable that can be subscribed to. The observable returns a value when the speech synthesizer has stopped talking out loud.
+   * Returns an Observable that can be subscribed to. The observable emits a value when the speech synthesizer has stopped talking out loud.
    * 
    * @returns the Observable to subscribe to
    */
@@ -97,12 +94,15 @@ export class SpeechSynthesisService {
         }
 
         subscriber.next(message);
-
       })
-
     });
   }
 
+  /**
+   * Returns an Observable that can be subscribed to. The observable emits a value when the speech synthesizer encountered an error.
+   * 
+   * @returns the Observable to subscribe to
+   */
   public onErrorEvent(): Observable<WebSpeechSynthesisMessage> {
 
     return new Observable(subscriber => {
@@ -179,14 +179,12 @@ export class SpeechSynthesisService {
           messageType: WebSpeechSynthesisMessageType.ERROR
         };
         subscriber.next(message);
-
       })
     })
-
   }
 
   /**
-   * Returns an Observable that can be subscribed to. The observable returns a value when the speech synthesizer has started talking out loud.
+   * Returns an Observable that can be subscribed to. The observable emits a value when the speech synthesizer has started talking out loud.
    * 
    * @returns the Observable to subscribe to
    */
@@ -204,14 +202,16 @@ export class SpeechSynthesisService {
         }
 
         subscriber.next(message);
-
       })
-
     })
-
   }
 
-  public onVoiceListUpdated():Observable<WebSpeechSynthesisMessage> {
+  /**
+   * Returns an Observable that can be subscribed to. The observable emits a value list of available voices for the speech synthesizer has been loaded. 
+   * 
+   * @returns the Observable to subscribe to
+   */
+  public onVoiceListUpdated(): Observable<WebSpeechSynthesisMessage> {
 
     return new Observable(subscriber => {
 
@@ -226,23 +226,5 @@ export class SpeechSynthesisService {
       subscriber.next(message);
       });
     });
-  }
-
-  /**
-   * Get the available voices in the currently active browser. 
-   * 
-   * Note: Seems to be not supported. Always returns an empty array.
-   * 
-   * @returns an array of {@link SpeechSynthesisVoice}s. 
-   */
-  public getAvailableVoices(): SpeechSynthesisVoice[] {
-
-    if (!this.speechSynthesis) {
-      return [];
-    }
-
-    let availableVoices: SpeechSynthesisVoice[] = this.speechSynthesis.getVoices();
-
-    return availableVoices;
   }
 }
