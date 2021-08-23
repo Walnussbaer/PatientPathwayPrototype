@@ -72,7 +72,7 @@ export class PatientPathwayAppointmentCreatorComponent implements OnInit {
   public contentQuestion: string = "Sie können nun noch eine Beschreibung dem Termin hinzufügen.";
 
   /** The utterance to welcome the user. */
-  public welcomeUtterance: string = "Herzliche Willkommen zur sprachgeführten Anlegung eines neuen Termins.";
+  public welcomeUtterance: string = "Herzlich Willkommen zur sprachgeführten Anlegung eines neuen Termins.";
 
   constructor(
     private speechRecognitionService: SpeechRecognitionService, 
