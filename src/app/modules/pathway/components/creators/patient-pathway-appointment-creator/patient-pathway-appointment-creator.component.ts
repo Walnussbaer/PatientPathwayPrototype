@@ -182,14 +182,18 @@ export class PatientPathwayAppointmentCreatorComponent implements OnInit {
       next: () => {
 
         synthesizerSubscription.unsubscribe(); // clean up
-        this.listenForNextFormInput();
+        this.listenForNextFormInput(this.getDateInput);
       }
     });
 
     this.currentFormSubscriptions!.push(this.speechRecognitionService.onSpeechRecognitionResultAvailable().subscribe({
       next: (message: WebSpeechRecognitionMessage) => {
 
+        this.clearFormInputSubscriptions();
         this.speechRecognitionService.stopRecognition();
+        this.recordingFormInput = false;
+        this.creatorContentClass = "is-not-recording";
+
         let dateValue: Date = new Date(message.data);
 
         // if the date is not valid, we need to reask the user
@@ -237,14 +241,17 @@ export class PatientPathwayAppointmentCreatorComponent implements OnInit {
       next: (result) => {
  
         synthesizerSubscription.unsubscribe(); // clean up
-        this.listenForNextFormInput();
+        this.listenForNextFormInput(this.getHeaderInput);
       }
     });
 
     this.currentFormSubscriptions!.push(this.speechRecognitionService.onSpeechRecognitionResultAvailable().subscribe({
       next: (message: WebSpeechRecognitionMessage) => {
 
+        this.clearFormInputSubscriptions();
         this.speechRecognitionService.stopRecognition();
+        this.recordingFormInput = false;
+        this.creatorContentClass = "is-not-recording";
 
         this.appointmentHeader = message.data as string;
         this.isLastVoiceInputValid = true;
@@ -270,14 +277,17 @@ export class PatientPathwayAppointmentCreatorComponent implements OnInit {
       next: (result) => {
 
         synthesizerSubscription.unsubscribe();
-        this.listenForNextFormInput();
+        this.listenForNextFormInput(this.getContentInput);
       }
     });
 
     this.currentFormSubscriptions!.push(this.speechRecognitionService.onSpeechRecognitionResultAvailable().subscribe({
       next: (message: WebSpeechRecognitionMessage) => {
 
+        this.clearFormInputSubscriptions();
         this.speechRecognitionService.stopRecognition();
+        this.recordingFormInput = false;
+        this.creatorContentClass = "is-not-recording";
 
         this.appointmentContent = message.data;
         this.isLastVoiceInputValid = true;
@@ -292,11 +302,11 @@ export class PatientPathwayAppointmentCreatorComponent implements OnInit {
   /**
    * Start the recognition and listen for next form input. 
    */
-  private listenForNextFormInput(): void {
+  private listenForNextFormInput(currentStep: () => void): void {
 
     this.speechRecognitionService.stopRecognition();
 
-    this.setupFormInputBehaviour();
+    this.setupFormInputBehaviour(currentStep);
 
     this.speechRecognitionService.startRecognition();
   }
@@ -421,7 +431,7 @@ export class PatientPathwayAppointmentCreatorComponent implements OnInit {
   /**
    * Setup behaviour of speech recognition for handling form input from the user. 
    */
-  private setupFormInputBehaviour(): void {
+  private setupFormInputBehaviour(currentStep: () => void): void {
 
     this.currentFormSubscriptions.push(this.speechRecognitionService.onSpeechRecognitionStarted().subscribe({
       next: (message: WebSpeechRecognitionMessage) => {
@@ -435,10 +445,14 @@ export class PatientPathwayAppointmentCreatorComponent implements OnInit {
     this.currentFormSubscriptions.push(this.speechRecognitionService.onSpeechRecognitionEnded().subscribe({
       next: (message: WebSpeechRecognitionMessage) => {
 
-        this.clearFormInputSubscriptions();
         this.recordingFormInput = false;
         this.creatorContentClass = "is-not-recording";
-        
+        this.clearFormInputSubscriptions();
+
+        if (!message.data) {
+          currentStep.call(this);
+        }
+
       }
     }));
 
@@ -447,10 +461,7 @@ export class PatientPathwayAppointmentCreatorComponent implements OnInit {
 
         this.clearFormInputSubscriptions();
         this.displayErrorMessage(message.data);
-
-        this.isLastVoiceInputValid = false;
-        this.recordingFormInput = false;
-        this.creatorContentClass = "is-not-recording";
+        this.closeDialogWithoutResult();
       }
     }));
   }
