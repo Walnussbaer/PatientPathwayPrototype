@@ -18,3 +18,14 @@
     background-color: coral;
 
 }
+
+.pathway-entry-side {
+
+    width: 100%;
+    height: 100%;
+    
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+}

@@ -15,7 +15,11 @@
 
             <mgl-timeline-entry-dot [size]="pathwayDotSize" class="pathway-entry-dot"></mgl-timeline-entry-dot>
 
-            <mgl-timeline-entry-side>{{event.date | date : "dd.MMMM.yyyy" : '' : 'de-DE'}}</mgl-timeline-entry-side>
+            <mgl-timeline-entry-side class="pathway-entry-side">
+                <b>
+                    {{event.date | date : "dd.MMMM.yyyy" : '' : 'de-DE'}}
+                </b>
+            </mgl-timeline-entry-side>
 
         </mgl-timeline-entry>
 
