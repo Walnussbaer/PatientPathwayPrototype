@@ -4,9 +4,17 @@ A patient pathway prototype system showcasing the use of the Web Speech API.
 
 This project is part of my thesis. 
 
-It also showcases how an Angular service using Observables can be used to use the Web Speech API. 
+It also showcases how the Web Speech API speech recognition and speech synthesis can be used inside Angular services. 
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 12.0.3.
+
+## System requirements for running the development server
+
+To run the prototype, please install and configure the following software in the presented order
+
+* NodeJS (runtime environment for JavaScript applications, such as the Angular CLI)
+* NPM Package Manager (if not installed by NodeJS)
+* Angular CLI Version 12
 
 ## Development server
 
