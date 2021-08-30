@@ -329,7 +329,7 @@ export class PatientPathwayControlComponent implements OnInit {
 
             case convertedRecognitionResult.match(/(lösche)\s([\w-\säöü]*)\s(am)\s(\w*)/)?.input: {
 
-              let eventToDelete: PathwayEvent | null = this.getDesiredPathewayEventFromRecognitionTranscript(convertedRecognitionResult);
+              let eventToDelete: PathwayEvent | null = this.getPathewayEventFromRecognitionTranscript(convertedRecognitionResult);
 
               if (eventToDelete) {
 
@@ -342,7 +342,7 @@ export class PatientPathwayControlComponent implements OnInit {
 
             case convertedRecognitionResult.match(/(zeige)\s([\w-\säöü]*)\s(am)\s(\w*)/)?.input: {
 
-              let eventToExpand: PathwayEvent | null = this.getDesiredPathewayEventFromRecognitionTranscript(convertedRecognitionResult);
+              let eventToExpand: PathwayEvent | null = this.getPathewayEventFromRecognitionTranscript(convertedRecognitionResult);
 
               if (eventToExpand) {
                 this.userWantsToOpenEvent.emit(eventToExpand);
@@ -537,26 +537,26 @@ export class PatientPathwayControlComponent implements OnInit {
   /**
    * Takes in a transcript and checks it for the header and the date of a possibly existing {@link PathwayEvent}.
    * 
-   * @param recognitionTranscript the transcript from the speech recognition to analyze
+   * @param transcript the transcript from the speech recognition to analyze
    */
-  private getDesiredPathewayEventFromRecognitionTranscript(recognitionTranscript: string): PathwayEvent | null {
+  private getPathewayEventFromRecognitionTranscript(transcript: string): PathwayEvent | null {
 
     // get the first whitespace, which indicates where the event name starts
-    let firstWhitespaceStringPosition = recognitionTranscript.indexOf(" ");
+    let firstWhitespaceStringPosition = transcript.indexOf(" ");
 
     // get the 'am' keyword position in the transcript string
-    let keywordStringPosition = recognitionTranscript.lastIndexOf("am");
+    let keywordStringPosition = transcript.lastIndexOf("am");
 
     // calculate the position where the event name should be in the transcipt
     let eventNameStringStartPosition = firstWhitespaceStringPosition + 1;
     let eventNameLength = keywordStringPosition - 1 - firstWhitespaceStringPosition;
 
     // get the name of the event from the transcript
-    let eventName: string = recognitionTranscript.substr(eventNameStringStartPosition, eventNameLength).trim();
+    let eventName: string = transcript.substr(eventNameStringStartPosition, eventNameLength).trim();
 
     // get the date that was mentioned
     let dateStringPosition = keywordStringPosition + "am".length + 1;
-    let eventDate: Date = new Date(recognitionTranscript.substring(dateStringPosition));
+    let eventDate: Date = new Date(transcript.substring(dateStringPosition));
 
     if (eventName && eventDate) {
       return {
