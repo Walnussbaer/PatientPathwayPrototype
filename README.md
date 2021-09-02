@@ -4,13 +4,17 @@ A patient pathway prototype system showcasing the use of the Web Speech API.
 
 This project is part of my thesis. 
 
-It also showcases how the Web Speech API speech recognition and speech synthesis can be used inside Angular services. 
+This application serves a simple patient pathway prototype for multiple sclerosis patients. You can use your voice to add and delete appointments, add and delete your daily symptoms as well as display the details of pathway events (appointments and symptoms). 
+
+When running this application, please use Google Chrome, as this is the browser with most support for the speech recognition of the Web Speech API at the moment.  
+
+This prototype also showcases how the Web Speech API speech recognition and speech synthesis can be used inside Angular services. 
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 12.0.3.
 
 ## System requirements for running the development server
 
-To run the prototype, please install and configure the following software in the presented order
+To run the prototype, please install and configure the following software in the presented order:
 
 * NodeJS (runtime environment for JavaScript applications, such as the Angular CLI)
 * NPM Package Manager (if not installed by NodeJS)
